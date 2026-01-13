@@ -1,0 +1,111 @@
+// Post AI icon changes starts
+
+.ai-button:hover .ai-icon circle,
+.ai-button:hover .ai-icon line,
+.ai-button:hover .ai-icon text {
+  stroke: #f05a28; /* for circle and line */
+  // fill: #f05a28;
+  transition: 0.2s ease-in-out;
+}
+
+/* Optional smooth transition for original state */
+.ai-icon circle,
+.ai-icon line,
+.ai-icon text {
+  transition: 0.2s ease-in-out;
+}
+
+// Post AI icon changes ends
+
+// Post Image, video , Pdf alignments Starts
+
+.post-media-container {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  margin: 0 auto;
+}
+
+.post-media-container img {
+  width: 100%; /* full width */
+  height: auto; /* maintain natural aspect ratio */
+  border-radius: 12px;
+  display: block;
+}
+
+.post-media-container .carousel-indicator {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  z-index: 2;
+}
+
+.post-media-container video {
+  width: 100%;
+  max-height: 400px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+}
+
+.pdf-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pdf-item {
+  width: 120px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.pdf-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-bottom: 0.5rem;
+}
+
+.pdf-item p {
+  font-size: 0.75rem;
+  margin: 0;
+  color: #6c757d;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+// Post Image, video , Pdf alignments Ends
+
+.post-text {
+  position: relative;
+}
+
+.see-more-btn {
+    display: inline;
+  background: none;
+  border: none;
+  color: #f05a28;
+  font-weight: 500;
+  padding: 0;
+  margin-top: 4px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.see-more-btn:hover {
+  color: #f05a28;
+}
+

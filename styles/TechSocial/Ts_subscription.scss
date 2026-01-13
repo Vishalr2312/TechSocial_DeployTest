@@ -1,0 +1,260 @@
+// Subscription page starts
+/* Container Background */
+.subscription-container {
+  background: linear-gradient(
+    0deg,
+    #000 0%,
+    #000 45%,
+    rgba(255, 106, 0, 0.15) 80%
+  );
+
+  .subs-close-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 10px;
+    color: white !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50rem;
+  }
+
+  .subs-close-btn:hover {
+    background-color: #efbdad3d !important;
+  }
+
+  .subs-close-btn:hover .mat-icon {
+    color: white !important;
+  }
+
+  @media (max-width: 576px) {
+    .subs-close-btn {
+      top: 14px;
+      left: 3px;
+    }
+    .subscription-subtitle {
+      font-size: clamp(14px, 1.2vw, 18px);
+    }
+  }
+
+  .subs-header-content {
+    text-align: center;
+    padding-top: 5rem;
+    margin-bottom: 3rem;
+  }
+  .subscription-heading {
+    color: var(--heading-1st-color);
+    font-weight: 600;
+    line-height: normal;
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    margin-bottom: 0.8rem;
+  }
+  .subscription-subtitle {
+    color: var(--icon-alt-color);
+  }
+}
+
+.subs-plan-card {
+  margin: 0rem 1rem;
+  background-color: var(--body-color);
+  border: 1.5px solid transparent;
+  border-radius: 1rem;
+  padding: 0rem 1.8rem;
+  width: 33.33%;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  color: var(--heading-1st-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.subs-plan-card > * {
+  margin-top: 22px;
+  margin-bottom: 10px;
+}
+
+.subs-card-features {
+  margin-top: 1rem;
+}
+
+.plan-title-row {
+  display: flex;
+  // align-items: center;
+  justify-content: space-between;
+}
+
+.plan-title {
+  font-weight: 700;
+  font-size: clamp(1rem, 2.2vw, 1.3rem);
+}
+
+/* Custom Radio */
+.plan-radio input[type="radio"] {
+  display: none;
+}
+.custom-radio {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--icon-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  transition: all 0.2s ease;
+  color: transparent;
+  cursor: pointer;
+}
+
+.plan-radio input[type="radio"]:checked + .custom-radio {
+  background-color: var(--primary-color);
+  color: var(--heading-1st-color);
+}
+
+.plan-subtitle {
+  font-size: clamp(1.5rem, 3.5vw, 3rem);
+  font-weight: 700;
+}
+
+.subs-plan-card.active {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(255, 127, 84, 0.35);
+  transform: scale(1.01);
+}
+
+.plan-features {
+  display: flex;
+  flex-direction: column;
+
+  padding: 0;
+  margin: 0;
+  margin-top: 15px;
+}
+
+.plan-features > li {
+  padding-bottom: 1rem;
+}
+
+.plan-features > li:last-child {
+  padding-bottom: 0rem;
+}
+
+.secondary-text {
+  font-size: 1rem;
+}
+
+/* Custom Checkbox */
+.custom-checkbox input {
+  display: none;
+}
+.checkbox-circle {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--icon-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  transition: all 0.2s ease;
+  color: transparent;
+  cursor: pointer;
+}
+
+.custom-checkbox input:checked + .checkbox-circle {
+  background-color: var(--primary-color);
+  color: var(--heading-1st-color);
+}
+
+/* Button */
+.subscribe-btn {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.8rem 2rem;
+  font-size: 14px;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+  margin-bottom: 50px;
+}
+.subscribe-btn:hover {
+  background-color: #e55e00;
+}
+
+.plan-feature {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* ✅ keeps right side aligned to top */
+  font-size: clamp(0.85rem, 0.9vw + 0.6rem, 1rem);
+}
+
+@media (max-width: 1020px) {
+  .subs-plan-card > * {
+    margin-bottom: 0px;
+  }
+  .subs-card-features {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .subs-plan-card {
+    width: 45%; /* same as your previous 1000px breakpoint */
+  }
+  .subs-card-features {
+    margin-top: 1rem;
+  }
+}
+
+/* small devices (md) - <768px */
+@media (max-width: 767.98px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .subs-plan-card {
+    width: 80%; /* same as your previous 768px breakpoint */
+    /* max-width: 600px; optional */
+  }
+  .subs-card-features {
+    margin-top: 0.8rem;
+  }
+}
+
+/* x-small devices (sm) - <576px) */
+@media (max-width: 575.98px) {
+  .subs-plan-card {
+    width: 95%; /* same as your previous 480px breakpoint */
+  }
+  .subs-card-features {
+    margin-top: 0.6rem;
+  }
+  .plan-features > li:last-child {
+    padding-bottom: 0.5rem;
+  }
+  .plan-subtitle {
+    margin-top: 1rem;
+  }
+}
+// Subscription page ends
+
+// Success/failure page starts
+.subscription-success-heading {
+  color: var(--heading-1st-color);
+  font-weight: 600;
+  line-height: normal;
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  margin-bottom: 0.8rem;
+  padding-top: 3rem;
+}
+
+.subs-success-img {
+  width: clamp(100px, 30vw, 147px);
+  height: auto; /* keeps ratio intact */
+  margin-top: 5rem;
+}
+// Success/failure page ends
