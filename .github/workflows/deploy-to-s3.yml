@@ -21,8 +21,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Next.js
-        run: npm run build
+      - name: Build & Export Next.js
+        run: 
+	     npm run build
+	     npm run export
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -33,7 +35,7 @@ jobs:
 
       - name: Deploy to S3
         env:
-          S3_BUCKET: your-s3-bucket-name
+          S3_BUCKET: techsocial-frontend
         run: |
           echo "Deploying to S3 bucket: $S3_BUCKET"
           aws s3 sync out/ s3://$S3_BUCKET --delete
