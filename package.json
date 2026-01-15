@@ -46,5 +46,11 @@
     "@types/js-cookie": "^3.0.6",
     "@types/react-modal-video": "^1.2.0",
     "@types/react-slick": "^0.23.10"
-  }
+  },
+
+  "scripts": {
+    "build": "next build",
+    "export": "next start"
+}
+
 }
