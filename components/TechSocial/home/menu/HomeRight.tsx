@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import HomeSubscriptionCard from "../cards/HomeSubscriptionCard";
-// import Contact from "../common/Contact";
+import Contact from "@/components/common/Contact";
 // import Request from "./Request";
 
 const HomeRight = () => {
@@ -33,9 +33,25 @@ const HomeRight = () => {
           </div>
           <div className="sidebar-area p-5">
             {/* Contact */}
+            <Contact>
+              <div className="mb-4">
+                <h6 className="d-inline-flex">Who to Follow</h6>
+              </div>
+            </Contact>
+          </div>
+          <div className="sidebar-area p-5">
+            {/* Contact */}
+            <Contact>
+              <div className="mb-4">
+                <h6 className="d-inline-flex">Who to Follow</h6>
+              </div>
+            </Contact>
+          </div>
+          <div className="sidebar-area p-5">
+            {/* Contact */}
             {/* <Contact>
               <div className="mb-4">
-                <h6 className="d-inline-flex">Contact</h6>
+                <h6 className="d-inline-flex">Who to Follow</h6>
               </div>
             </Contact> */}
           </div>
