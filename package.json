@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next start"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.14",
@@ -46,11 +47,6 @@
     "@types/js-cookie": "^3.0.6",
     "@types/react-modal-video": "^1.2.0",
     "@types/react-slick": "^0.23.10"
-  },
-
-  "scripts": {
-    "build": "next build",
-    "export": "next start"
-}
+  }
 
 }
