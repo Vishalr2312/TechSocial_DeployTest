@@ -3,7 +3,7 @@
 import { useState } from "react";
 import HomeSubscriptionCard from "../cards/HomeSubscriptionCard";
 import Contact from "@/components/common/Contact";
-import SidebarFooter from "./Components/SideBarFooter";
+import SidebarFooter from "./Components/SidebarFooter";
 // import Request from "./Request";
 
 const HomeRight = () => {
