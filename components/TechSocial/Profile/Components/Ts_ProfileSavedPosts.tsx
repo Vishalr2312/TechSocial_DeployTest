@@ -1,10 +1,10 @@
 "use client";
 
-import Contact from "@/components/common/Contact";
 import Photos from "@/components/marketplacePost/Photos";
 import { useAppSelector } from "@/Redux/hooks";
 import Link from "next/link";
 import Ts_ProfileSavedPostFeeds from "./Saved-Posts/Ts_ProfileSavedPostFeeds";
+import Contact from "@/components/common/Contact";
 
 interface BioItem {
   id: number;

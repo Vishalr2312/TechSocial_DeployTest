@@ -222,15 +222,15 @@ const Ts_WriteComment = ({ postId, onCommentAdded }: Ts_WriteCommentProps) => {
               border: "1px solid #f05a28",
             }}
           >
-            <Link href="#">
+            {/* <Link href="#"> */}
               <Image
-                src={currentUser?.picture || add_post_avatar}
+                src={currentUser?.picture || "/images/default-avatar.png"}
                 height={50}
                 width={50}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                alt="icon"
+                alt="avatar"
               />
-            </Link>
+            {/* </Link> */}
           </div>
         </div>
         <div className="form-content input-area py-1 d-flex gap-2 align-items-center w-100">

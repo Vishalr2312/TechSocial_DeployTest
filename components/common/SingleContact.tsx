@@ -1,37 +1,69 @@
 import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
 import ContactAction from "../ui/ContactAction";
+import { UserList } from "@/Type/SearchUsers/SearchUsers";
+import { useAppSelector } from "@/Redux/hooks";
 
-interface ContactProps {
-  id: number;
-  name: string;
-  avt: StaticImageData;
+// interface ContactProps {
+//   id: number;
+//   name: string;
+//   avt: StaticImageData;
+// }
+
+interface SingleContactProps {
+  data: UserList;
 }
 
-const SingleContact = ({ data }: { data: ContactProps }) => {
-  const { avt, id, name } = data;
+const SingleContact = ({ data }: SingleContactProps) => {
+  // const { avt, id, name } = data;
+  const { id, name, picture, isFollower, isFollowing } = data;
+
+  const loggedInUserId = useAppSelector((state) => state.user.user?.id);
+  const isOwnProfile = loggedInUserId === id;
+
+  const actionList: [string, string][] = isFollowing
+    ? [["Unfollow", "person_remove"]]
+    : [["Follow", "person_add"]];
 
   return (
     <>
       <div className="avatar-item d-flex gap-3 align-items-center">
         <div className="avatar-item">
-          <Image className="avatar-img max-un" src={avt} alt="avatar" />
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              overflow: "hidden",
+              // border: "1px solid #f05a28",
+            }}
+          >
+            <Image
+              className="avatar-img max-un"
+              src={picture || "/images/default-avatar.png"}
+              width={48}
+              height={48}
+              alt="avatar"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </div>
         </div>
         <div className="info-area">
           <h6 className="m-0">
             <Link href="/public-profile/post" className="mdtxt">
-              {name}
+              {name || "Unknown User"}
             </Link>
           </h6>
         </div>
       </div>
       {/* Contact Action */}
-      <ContactAction
+      {/* <ContactAction
         actionList={[
           ["Unfollow", "person_remove"],
           ["Hide Contact", "hide_source"],
         ]}
-      />
+      /> */}
+      {!isOwnProfile && <ContactAction actionList={actionList} />}
     </>
   );
 };

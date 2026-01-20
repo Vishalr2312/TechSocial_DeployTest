@@ -3,6 +3,7 @@
 import { useState } from "react";
 import HomeSubscriptionCard from "../cards/HomeSubscriptionCard";
 import Contact from "@/components/common/Contact";
+import SidebarFooter from "./Components/SideBarFooter";
 // import Request from "./Request";
 
 const HomeRight = () => {
@@ -41,20 +42,16 @@ const HomeRight = () => {
           </div>
           <div className="sidebar-area p-5">
             {/* Contact */}
-            <Contact>
-              <div className="mb-4">
-                <h6 className="d-inline-flex">Who to Follow</h6>
-              </div>
-            </Contact>
-          </div>
-          <div className="sidebar-area p-5">
-            {/* Contact */}
             {/* <Contact>
               <div className="mb-4">
-                <h6 className="d-inline-flex">Who to Follow</h6>
+                <h6 className="d-inline-flex">Trending</h6>
               </div>
             </Contact> */}
           </div>
+          <div className="p-5">
+            <SidebarFooter />
+          </div>
+          <div className="p-5"></div>
         </div>
       </div>
     </div>

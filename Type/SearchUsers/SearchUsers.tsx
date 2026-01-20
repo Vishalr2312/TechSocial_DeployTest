@@ -33,4 +33,5 @@ export interface UserList {
   profile_views: number;
   isFollower: number;
   isFollowing: number;
+  totalActivePost: number;
 }
