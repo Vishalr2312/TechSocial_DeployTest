@@ -7,8 +7,10 @@ import { useState } from "react";
 import avatar_1 from "/public/images/avatar-1.png";
 import { homeLeftMenu } from "@/data/TechSocial/sidebarData";
 import Ts_Logout from "../common/Ts_Logout";
+import { useAppSelector } from "@/Redux/hooks";
 
 const HomeLeft = ({ clss }: { clss?: string }) => {
+  const currentUser = useAppSelector((state) => state.user.user);
   const [activeProfile, setActiveProfile] = useState<boolean>(false);
   const pathname = usePathname();
 
@@ -38,13 +40,30 @@ const HomeLeft = ({ clss }: { clss?: string }) => {
         </div>
         <div className="profile-pic d-flex gap-2 align-items-center">
           <div className="avatar position-relative">
-            <Image className="avatar-img max-un" src={avatar_1} alt="avatar" />
+            <div
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: "1px solid #f05a28",
+              }}
+            >
+              <Image
+                className="avatar-img max-un"
+                src={currentUser?.picture || avatar_1}
+                width={48}
+                height={48}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                alt="avatar"
+              />
+            </div>
           </div>
           <div className="text-area">
             <h6 className="m-0 mb-1">
-              <Link href="profile/post">Lerio Mao</Link>
+              <Link href="profile/post">{currentUser?.name}</Link>
             </h6>
-            <p className="mdtxt">@maolio</p>
+            <p className="mdtxt">@{currentUser?.username}</p>
           </div>
         </div>
         <ul className="profile-link mt-7 mb-7 pb-7">

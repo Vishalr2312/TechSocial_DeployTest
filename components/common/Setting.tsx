@@ -1,28 +1,29 @@
-'use client';
+"use client";
 
-import { useTheme } from 'next-themes';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import avatar_1 from '/public/images/avatar-1.png';
-import DarkLoader from '../TechSocial/Loader/DarkLoader';
-import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
-import secureLocalStorage from 'react-secure-storage';
-import { useAppDispatch } from '@/Redux/hooks';
-import { signOutUser } from '@/Redux/Reducers/UserSlice';
-import { toast } from 'react-toastify';
+import { useTheme } from "next-themes";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import avatar_1 from "/public/images/avatar-1.png";
+import DarkLoader from "../TechSocial/Loader/DarkLoader";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import secureLocalStorage from "react-secure-storage";
+import { useAppDispatch, useAppSelector } from "@/Redux/hooks";
+import { signOutUser } from "@/Redux/Reducers/UserSlice";
+import { toast } from "react-toastify";
 
 const Setting = ({ activeHandler }: { activeHandler: (a: string) => void }) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const user = useAppSelector((state) => state.user.user);
 
   const [loading, setLoading] = useState(false);
   const [enabled, setEnabled] = useState(false);
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState("dark");
 
   const handleTheme = () => {
-    setTheme(theme === 'light' || theme === 'system' ? 'dark' : 'light');
+    setTheme(theme === "light" || theme === "system" ? "dark" : "light");
   };
 
   useEffect(() => setEnabled(true), []);
@@ -30,19 +31,19 @@ const Setting = ({ activeHandler }: { activeHandler: (a: string) => void }) => {
   const handleLogout = async () => {
     try {
       setLoading(true);
-      Cookies.remove('loginToken');
-      secureLocalStorage.removeItem('loginToken');
+      Cookies.remove("loginToken");
+      secureLocalStorage.removeItem("loginToken");
       dispatch(signOutUser());
-      router.push('/login');
+      router.push("/login");
     } catch (error) {
-      console.error('Logout failed:', error);
-      toast.error('Something went wrong while logging out. Please try again.');
+      console.error("Logout failed:", error);
+      toast.error("Something went wrong while logging out. Please try again.");
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (window.location.pathname === '/login') {
+    if (window.location.pathname === "/login") {
       setLoading(false);
     }
   }, [router]);
@@ -56,7 +57,7 @@ const Setting = ({ activeHandler }: { activeHandler: (a: string) => void }) => {
       <div className="profile-pic d-flex align-items-center">
         <span
           className="avatar cmn-head active-status"
-          onClick={() => activeHandler('settings')}
+          onClick={() => activeHandler("settings")}
         >
           <Image className="avatar-img max-un" src={avatar_1} alt="avatar" />
         </span>
@@ -65,15 +66,34 @@ const Setting = ({ activeHandler }: { activeHandler: (a: string) => void }) => {
         <div className="head-area">
           <div className="d-flex gap-3 align-items-center">
             <div className="avatar-item">
-              <Image
+              {/* <Image
                 className="avatar-img max-un"
                 src={avatar_1}
                 alt="avatar"
-              />
+              /> */}
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: "1px solid #f05a28",
+                }}
+              >
+                <Image
+                  src={user?.picture || avatar_1}
+                  alt={`avatar`}
+                  width={48}
+                  height={48}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  priority
+                />
+              </div>
             </div>
             <div className="text-area">
-              <h6 className="m-0 mb-1">Lori Ferguson</h6>
-              <p className="mdtxt">Web Developer</p>
+              <h6 className="m-0 mb-1">{user?.name}</h6>
+              {/* <p className="mdtxt">Web Developer</p> */}
+              <span className="mdtxt status">@{user?.username}</span>
             </div>
           </div>
         </div>

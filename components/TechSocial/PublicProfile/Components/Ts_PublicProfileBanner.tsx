@@ -7,15 +7,15 @@ import avatar_3 from "/public/images/avatar-3.png";
 import avatar_4 from "/public/images/avatar-4.png";
 import profile_cover_img from "/public/images/profile-cover-img.png";
 import ContactAction from "@/components/ui/ContactAction";
-import { UserProfile } from "@/Type/Profile/Ts_Profile";
 import { useAppSelector } from "@/Redux/hooks";
 
-const Ts_ProfileBanner = () => {
-  const path = usePathname();
-  const splitPath = path.split("/");
-  const lastPath = splitPath[splitPath.length - 1];
+const Ts_PublicProfileBanner = () => {
+//   const path = usePathname();
+  const pathname = usePathname();
+//   const splitPath = path.split("/");
+//   const lastPath = splitPath[splitPath.length - 1];
 
-  const user = useAppSelector((state) => state.profile.user);
+  const user = useAppSelector((state) => state.publicProfile.user);
 
   return (
     <div className="banner-area pages-create mb-5">
@@ -101,7 +101,7 @@ const Ts_ProfileBanner = () => {
           </div>
           <div className="btn-item d-center gap-3">
             {/* <Link href="#" className="cmn-btn d-center gap-1"> */}
-            <button
+            {/* <button
               className="cmn-btn d-center gap-1"
               data-bs-toggle="modal"
               data-bs-target="#goTsEditProfileMod"
@@ -111,7 +111,7 @@ const Ts_ProfileBanner = () => {
                 edit_note
               </i>
               Edit Profile
-            </button>
+            </button> */}
             {/* </Link> */}
 
             {/* Contact Action */}
@@ -127,9 +127,13 @@ const Ts_ProfileBanner = () => {
           <ul className="nav mt-5 pt-4 flex-wrap gap-2 tab-area">
             <li className="nav-item" role="presentation">
               <Link
-                href="/profile/post"
+                // href="/profile/post"
+                // className={`nav-link d-center ${
+                //   lastPath === "post" && "active"
+                // }`}
+                href={`/profile/${user?.id}/post`}
                 className={`nav-link d-center ${
-                  lastPath === "post" && "active"
+                  pathname.includes("/post") ? "active" : ""
                 }`}
               >
                 Posts
@@ -137,9 +141,13 @@ const Ts_ProfileBanner = () => {
             </li>
             <li className="nav-item" role="presentation">
               <Link
-                href="/profile/liked-posts"
+                // href="/profile/liked-posts"
+                // className={`nav-link d-center ${
+                //   lastPath === "liked-posts" && "active"
+                // }`}
+                href={`/profile/${user?.id}/liked-posts`}
                 className={`nav-link d-center ${
-                  lastPath === "liked-posts" && "active"
+                  pathname.includes("/liked-posts") ? "active" : ""
                 }`}
               >
                 Likes
@@ -147,9 +155,13 @@ const Ts_ProfileBanner = () => {
             </li>
             <li className="nav-item" role="presentation">
               <Link
-                href="/profile/reposts"
+                // href="/profile/reposts"
+                // className={`nav-link d-center ${
+                //   lastPath === "reposts" && "active"
+                // }`}
+                href={`/profile/${user?.id}/reposts`}
                 className={`nav-link d-center ${
-                  lastPath === "reposts" && "active"
+                  pathname.includes("/reposts") ? "active" : ""
                 }`}
               >
                 Reposts
@@ -157,9 +169,13 @@ const Ts_ProfileBanner = () => {
             </li>
             <li className="nav-item" role="presentation">
               <Link
-                href="/profile/commented-posts"
+                // href="/profile/commented-posts"
+                // className={`nav-link d-center ${
+                //   lastPath === "commented-posts" && "active"
+                // }`}
+                href={`/profile/${user?.id}/commented-posts`}
                 className={`nav-link d-center ${
-                  lastPath === "commented-posts" && "active"
+                  pathname.includes("/commented-posts") ? "active" : ""
                 }`}
               >
                 Comments
@@ -167,9 +183,13 @@ const Ts_ProfileBanner = () => {
             </li>
             <li className="nav-item" role="presentation">
               <Link
-                href="/profile/mentioned-posts"
+                // href="/profile/connections"
+                // className={`nav-link d-center ${
+                //   lastPath === "connections" && "active"
+                // }`}
+                href={`/profile/${user?.id}/mentioned-posts`}
                 className={`nav-link d-center ${
-                  lastPath === "mentioned-posts" && "active"
+                  pathname.includes("/mentioned-posts") ? "active" : ""
                 }`}
               >
                 Mentions
@@ -178,9 +198,9 @@ const Ts_ProfileBanner = () => {
             <li className="nav-item" role="presentation">
               <Link
                 href="/profile/saved-posts"
-                className={`nav-link d-center ${
-                  lastPath === "saved-posts" && "active"
-                }`}
+                // className={`nav-link d-center ${
+                //   lastPath === "saved-posts" && "active"
+                // }`}
               >
                 Saved
               </Link>
@@ -192,4 +212,4 @@ const Ts_ProfileBanner = () => {
   );
 };
 
-export default Ts_ProfileBanner;
+export default Ts_PublicProfileBanner;

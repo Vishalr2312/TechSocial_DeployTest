@@ -6,28 +6,52 @@ import { toast } from "react-toastify";
 import DarkLoader from "../../../Loader/DarkLoader";
 import Ts_Post from "./Ts_Post";
 import Ts_PostReaction from "./Ts_PostReaction";
+import {
+  PostGallery,
+  ResharedPost,
+  ResharedPostsData,
+} from "@/Type/Profile/Ts_ProfileReposts";
 // import Ts_Post from "./Ts_Post";
 // import Ts_PostReaction from "./Ts_PostReaction";
 
-interface ApiResponse {
+// interface ApiResponse {
+//   status: number;
+//   success: string;
+//   message: string;
+//   data: {
+//     post: PostData;
+//   };
+// }
+interface ResharedPostsApiResponse {
   status: number;
-  success: string;
   message: string;
-  data: {
-    post: PostData;
-  };
+  data: ResharedPostsData;
 }
 
 interface Ts_PostProps {
+  // repost info
   postId: number;
-  postText?: string;
-  hashTags?: string[];
-  postImgs: string[];
-  postVideos?: string[];
-  postPdfs?: string[];
-  name: string;
-  userName: string;
-  userAvt: string;
+  repostedBy?: {
+    name: string;
+    username: string;
+    avatar: string;
+    comment?: string;
+  };
+
+  // original post
+  originalPost: {
+    postId: number;
+    text?: string;
+    imgs: string[];
+    videos?: string[];
+    pdfs?: string[];
+    // user: {
+    //   name: string;
+    //   username: string;
+    //   avatar: string;
+    // };
+  };
+
   created_at: number;
   total_view: number;
   total_like: number;
@@ -45,31 +69,84 @@ const Ts_ProfileRepostFeeds = ({ clss = "", reaction = "" }) => {
   const pageIndex = useRef(0);
 
   // 🧠 Common mapper
-  const mapPost = (post: PostItem): Ts_PostProps => {
-    const gallery: PostGalleryItem[] = post.postGallary || [];
-    const isPdf = (g: PostGalleryItem) =>
-      g.filename?.toLowerCase().endsWith(".pdf");
+  // const mapPost = (post: ResharedPost): Ts_PostProps => {
+  //   const gallery: PostGallery[] = post.postGallary || [];
+  //   const isPdf = (g: PostGallery) =>
+  //     g.filename?.toLowerCase().endsWith(".pdf");
 
-    const images = gallery.filter((g) => g.media_type === 1 && !isPdf(g));
-    const videos = gallery.filter((g) => g.media_type === 2);
-    const pdfs = gallery.filter((g) => g.media_type === 4 || isPdf(g));
+  //   const images = gallery.filter((g) => g.media_type === 1 && !isPdf(g));
+  //   const videos = gallery.filter((g) => g.media_type === 2);
+  //   const pdfs = gallery.filter((g) => g.media_type === 4 || isPdf(g));
+
+  //   return {
+  //     postId: post.id,
+  //     postText: post.description || post.title || "",
+  //     hashTags: post.hashtags || [],
+  //     postImgs: images.map((i) => i.filenameUrl || i.filename),
+  //     postVideos: videos.map((v) => v.filenameUrl || v.filename),
+  //     postPdfs: pdfs.map((p) => p.filenameUrl || p.filename),
+  //     name: post.user.name,
+  //     userName: post.user.username,
+  //     userAvt: post.user.picture || "",
+  //     created_at: Number(post.created_at) || 0,
+  //     total_view: post.total_view || 0,
+  //     total_like: post.total_like || 0,
+  //     total_comment: post.total_comment || 0,
+  //     total_share: post.total_share || 0,
+  //     ai_search_views: post.ai_search_views || 0,
+  //   };
+  // };
+  const mapPost = (post: ResharedPost): Ts_PostProps => {
+    const origin = post.originPost;
+
+    const mapGallery = (galleries: PostGallery[]) => {
+      const isPdf = (g: PostGallery) =>
+        g.filename?.toLowerCase().endsWith(".pdf");
+
+      return {
+        imgs: galleries
+          .filter((g) => g.media_type === 1 && !isPdf(g))
+          .map((g) => g.filenameUrl),
+        videos: galleries
+          .filter((g) => g.media_type === 2)
+          .map((g) => g.filenameUrl),
+        pdfs: galleries
+          .filter((g) => g.media_type === 4 || isPdf(g))
+          .map((g) => g.filenameUrl),
+      };
+    };
+
+    const originalMedia = mapGallery(origin.postGallary || []);
 
     return {
       postId: post.id,
-      postText: post.description || post.title || "",
-      hashTags: post.hashtags || [],
-      postImgs: images.map((i) => i.filenameUrl || i.filename),
-      postVideos: videos.map((v) => v.filenameUrl || v.filename),
-      postPdfs: pdfs.map((p) => p.filenameUrl || p.filename),
-      name: post.user.name,
-      userName: post.user.username,
-      userAvt: post.user.picture || "",
-      created_at: Number(post.created_at) || 0,
-      total_view: post.total_view || 0,
-      total_like: post.total_like || 0,
-      total_comment: post.total_comment || 0,
-      total_share: post.total_share || 0,
-      ai_search_views: post.ai_search_views || 0,
+
+      repostedBy: {
+        name: post.user.name,
+        username: post.user.username,
+        avatar: post.user.picture,
+        comment: post.share_comment || "",
+      },
+
+      originalPost: {
+        postId: origin.id,
+        text: origin.description || origin.title,
+        imgs: originalMedia.imgs,
+        videos: originalMedia.videos,
+        pdfs: originalMedia.pdfs,
+        // user: {
+        //   name: origin.user?.name ?? "",
+        //   username: origin.user?.username ?? "",
+        //   avatar: origin.user?.picture ?? "",
+        // },
+      },
+
+      created_at: post.created_at,
+      total_view: origin.total_view,
+      total_like: origin.total_like,
+      total_comment: origin.total_comment,
+      total_share: origin.total_share,
+      ai_search_views: origin.ai_search_views,
     };
   };
 
@@ -79,13 +156,13 @@ const Ts_ProfileRepostFeeds = ({ clss = "", reaction = "" }) => {
       setLoading(true);
 
       // 1️⃣ Fetch first page to get meta info
-      const firstRes = await axiosCall<ApiResponse>({
+      const firstRes = await axiosCall<ResharedPostsApiResponse>({
         ENDPOINT: "posts/view-shared-posts?expand=user&page=1",
         METHOD: "GET",
       });
 
-      const firstItems = firstRes?.data?.data?.post?.items ?? [];
-      const meta = firstRes?.data?.data?.post?._meta;
+      const firstItems = firstRes?.data?.data?.posts ?? [];
+      const meta = firstRes?.data?.data?._meta;
       const totalPages = meta?.pageCount ?? 1;
       const perPage = meta?.perPage ?? 20;
 
@@ -93,18 +170,18 @@ const Ts_ProfileRepostFeeds = ({ clss = "", reaction = "" }) => {
 
       // 2️⃣ Fetch remaining pages in parallel
       const otherPageRequests = Array.from({ length: totalPages - 1 }, (_, i) =>
-        axiosCall<ApiResponse>({
+        axiosCall<ResharedPostsApiResponse>({
           ENDPOINT: `posts/view-shared-posts?expand=user&page=${i + 2}`,
           METHOD: "GET",
-        }).catch(() => null)
+        }).catch(() => null),
       );
 
       const responses = await Promise.all(otherPageRequests);
 
-      const allFetchedPosts: PostItem[] = [...firstItems];
+      const allFetchedPosts: ResharedPost[] = [...firstItems];
       responses.forEach((res) => {
-        if (res && res.data?.data?.post?.items?.length) {
-          allFetchedPosts.push(...res.data.data.post.items);
+        if (res && res.data?.data?.posts.length) {
+          allFetchedPosts.push(...res.data.data.posts);
         }
       });
 
@@ -112,7 +189,7 @@ const Ts_ProfileRepostFeeds = ({ clss = "", reaction = "" }) => {
       const mappedPosts = allFetchedPosts.map(mapPost);
 
       const uniquePosts = Array.from(
-        new Map(mappedPosts.map((p) => [p.postId, p])).values()
+        new Map(mappedPosts.map((p) => [p.postId, p])).values(),
       );
 
       uniquePosts.sort((a, b) => b.created_at - a.created_at);
@@ -133,7 +210,7 @@ const Ts_ProfileRepostFeeds = ({ clss = "", reaction = "" }) => {
   const loadMorePosts = useCallback(() => {
     const nextPosts = allPosts.slice(
       pageIndex.current * postsPerRender,
-      (pageIndex.current + 1) * postsPerRender
+      (pageIndex.current + 1) * postsPerRender,
     );
 
     setDisplayedPosts((prev) => [...prev, ...nextPosts]);

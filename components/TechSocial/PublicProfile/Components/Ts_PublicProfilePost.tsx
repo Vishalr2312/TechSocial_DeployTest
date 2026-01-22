@@ -3,9 +3,9 @@
 import Photos from "@/components/marketplacePost/Photos";
 import { useAppSelector } from "@/Redux/hooks";
 import Link from "next/link";
-import Ts_ProfileRepostFeeds from "./Reposts/Ts_ProfileRepostFeeds";
 import Contact from "@/components/common/Contact";
 import SidebarFooter from "../../home/menu/Components/SidebarFooter";
+import Ts_ProfilePostFeeds from "../../Profile/Components/Posts/Ts_ProfilePostFeeds";
 
 interface BioItem {
   id: number;
@@ -14,8 +14,8 @@ interface BioItem {
   class: string;
 }
 
-const Ts_ProfileReposts = () => {
-  const user = useAppSelector((state) => state.profile.user);
+const Ts_PublicProfilePost = () => {
+  const user = useAppSelector((state) => state.publicProfile.user);
 
   const bioData: BioItem[] = [
     user?.email
@@ -24,18 +24,18 @@ const Ts_ProfileReposts = () => {
 
     // user?.phone ? { id: 2, type: user.phone, icon: "call", class: "" } : null,
 
-    user?.website
-      ? { id: 3, type: user.website, icon: "language", class: "link" }
-      : null,
+    // user?.website
+    //   ? { id: 3, type: user.website, icon: "language", class: "link" }
+    //   : null,
 
-    user?.industry
-      ? {
-          id: 4,
-          type: user.industry,
-          icon: "location_city",
-          class: "",
-        }
-      : null,
+    // user?.industry
+    //   ? {
+    //       id: 4,
+    //       type: user.industry,
+    //       icon: "location_city",
+    //       class: "",
+    //     }
+    //   : null,
 
     user?.city || user?.country
       ? {
@@ -46,7 +46,7 @@ const Ts_ProfileReposts = () => {
         }
       : null,
   ].filter((item): item is BioItem => item !== null);
-  // console.log("User in Ts_ProfilePost:", user);
+  // console.log("User in Ts_PublicProfilePost:", user);
   return (
     <>
       <div className="col-xxl-3 col-xl-3 col-lg-4 col-6 cus-z2">
@@ -99,7 +99,7 @@ const Ts_ProfileReposts = () => {
         {/* <MakePost /> */}
 
         {/* Feeds */}
-        <Ts_ProfileRepostFeeds clss="p-3 p-sm-5" />
+        <Ts_ProfilePostFeeds clss="p-3 p-sm-5" />
       </div>
       <div className="col-xxl-3 col-xl-4 col-lg-4 col-6 mt-5 mt-xl-0">
         <div className="cus-overflow cus-scrollbar sidebar-head">
@@ -135,4 +135,4 @@ const Ts_ProfileReposts = () => {
   );
 };
 
-export default Ts_ProfileReposts;
+export default Ts_PublicProfilePost;

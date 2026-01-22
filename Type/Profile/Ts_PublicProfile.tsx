@@ -1,4 +1,4 @@
-export interface UserProfile {
+export interface UserPublicProfile {
   id: number;
   role: number;
   name: string;
@@ -8,19 +8,16 @@ export interface UserProfile {
   bio: string | null;
   description: string | null;
   image: string | null;
+  picture: string | null;
   cover_image: string | null;
+  coverImageUrl: string | null
   is_verified: number;
   country_code: string | null;
   phone: string | null;
-  website: string | null;
-  industry: string | null;
   country: string | null;
   city: string | null;
   sex: string | null;
   dob: string | null;
-  paypal_id: string | null;
-  available_balance: number;
-  available_coin: number;
   is_biometric_login: number;
   is_push_notification_allow: number;
   like_push_notification_status: number;
@@ -31,28 +28,12 @@ export interface UserProfile {
   location: string | null;
   latitude: string | null;
   longitude: string | null;
-  height: string | null;
-  color: string | null;
-  religion: string | null;
-  marital_status: string | null;
-  smoke_id: number | null;
-  drinking_habit: string | null;
-  qualification: string | null;
-  occupation: string | null;
-  country_id: number | null;
-  state_id: number | null;
-  city_id: number | null;
-  work_experience_month: number | null;
-  work_experience_year: number | null;
-  profile_category_type: string | null;
   profile_visibility: number;
   follower_status: number;
   following_status: number;
   is_show_online_chat_status: number;
   is_reported: number;
-  picture: string;
-  coverImageUrl: string;
-  userStory: string | null;
+  userStory: any | null;
   profileCategoryName: string | null;
   is_like: number;
   is_match: number;
@@ -64,10 +45,10 @@ export interface UserProfile {
   totalActivePost: number;
   userLiveDetail: any | null;
   giftSummary: GiftSummary;
-  interest: Interest[];
+  interest: UserInterest[];
   userSetting: any[];
   language: any[];
-  featureList: Feature[];
+  featureList: FeatureItem[];
 }
 
 export interface GiftSummary {
@@ -75,12 +56,12 @@ export interface GiftSummary {
   totalCoin: number;
 }
 
-export interface Interest {
+export interface UserInterest {
   interest_id: number;
   name: string;
 }
 
-export interface Feature {
+export interface FeatureItem {
   id: number;
   name: string;
   feature_key: string;
@@ -88,22 +69,3 @@ export interface Feature {
   is_active: number;
 }
 
-export interface EditProfileInitialValueType {
-  name: string;
-  username: string;
-  industry: string;
-  city: string;
-  country: string;
-  website: string;
-  bio: string;
-}
-
-// export const EditProfileInitialValue: EditProfileInitialValueType = {
-//   name: "",
-//   username: "",
-//   industry: "",
-//   city: "",
-//   country: "",
-//   website: "",
-//   bio: "",
-// };

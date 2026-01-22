@@ -5,15 +5,17 @@ import Link from "next/link";
 import ts_profile_avatar from "/public/images/add-post-avatar.png";
 import React, { useRef, useState } from "react";
 import Ts_Location_Modal from "./Modal/Ts_Location_Modal";
+import { useAppSelector } from "@/Redux/hooks";
 
 const PostInputs = () => {
+  const currentUser = useAppSelector((state) => state.user.user);
   const [text, setText] = useState("");
   const [images, setimages] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
   const [gifs, setGifs] = useState<File[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
-    null
+    null,
   );
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -144,11 +146,23 @@ const PostInputs = () => {
     <div className="share-post d-flex gap-3 gap-sm-5 p-3 p-sm-5">
       <div className="profile-box">
         <Link href="#">
-          <Image
-            src={ts_profile_avatar}
-            className="rounded-circle"
-            alt="icon"
-          />
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: "1px solid #f05a28",
+            }}
+          >
+            <Image
+              src={currentUser?.picture || ts_profile_avatar}
+              width={50}
+              height={50}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              alt="icon"
+            />
+          </div>
         </Link>
       </div>
       <form action="#" className="w-100 position-relative">

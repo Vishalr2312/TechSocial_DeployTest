@@ -2,11 +2,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface Ts_PostProps {
   postId: number;
+  userId: number;
   postText?: string;
   hashTags?: string[];
   postImgs: string[];
   postVideos?: string[];
   postPdfs?: string[];
+  isVideoPost?: boolean;
   name: string;
   userName: string;
   userAvt: string;

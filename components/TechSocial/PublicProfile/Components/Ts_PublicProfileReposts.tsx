@@ -3,9 +3,9 @@
 import Photos from "@/components/marketplacePost/Photos";
 import { useAppSelector } from "@/Redux/hooks";
 import Link from "next/link";
-import Ts_ProfileRepostFeeds from "./Reposts/Ts_ProfileRepostFeeds";
 import Contact from "@/components/common/Contact";
 import SidebarFooter from "../../home/menu/Components/SidebarFooter";
+import Ts_ProfileRepostFeeds from "../../Profile/Components/Reposts/Ts_ProfileRepostFeeds";
 
 interface BioItem {
   id: number;
@@ -14,8 +14,8 @@ interface BioItem {
   class: string;
 }
 
-const Ts_ProfileReposts = () => {
-  const user = useAppSelector((state) => state.profile.user);
+const Ts_PublicProfileReposts = () => {
+  const user = useAppSelector((state) => state.publicProfile.user);
 
   const bioData: BioItem[] = [
     user?.email
@@ -24,18 +24,18 @@ const Ts_ProfileReposts = () => {
 
     // user?.phone ? { id: 2, type: user.phone, icon: "call", class: "" } : null,
 
-    user?.website
-      ? { id: 3, type: user.website, icon: "language", class: "link" }
-      : null,
+    // user?.website
+    //   ? { id: 3, type: user.website, icon: "language", class: "link" }
+    //   : null,
 
-    user?.industry
-      ? {
-          id: 4,
-          type: user.industry,
-          icon: "location_city",
-          class: "",
-        }
-      : null,
+    // user?.industry
+    //   ? {
+    //       id: 4,
+    //       type: user.industry,
+    //       icon: "location_city",
+    //       class: "",
+    //     }
+    //   : null,
 
     user?.city || user?.country
       ? {
@@ -113,9 +113,10 @@ const Ts_ProfileReposts = () => {
           </div>
           <div className="cus-scrollbar side-wrapper">
             <div className="sidebar-wrapper d-flex flex-column gap-6 max-width">
-              {/* <div className="sidebar-area post-item p-5">
+              <div className="sidebar-area post-item p-5">
+                {/* Photos */}
                 <Photos />
-              </div> */}
+              </div>
               <div className="sidebar-area p-5">
                 {/* Contact */}
                 <Contact>
@@ -135,4 +136,4 @@ const Ts_ProfileReposts = () => {
   );
 };
 
-export default Ts_ProfileReposts;
+export default Ts_PublicProfileReposts;

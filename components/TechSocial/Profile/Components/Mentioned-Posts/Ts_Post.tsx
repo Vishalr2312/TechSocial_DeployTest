@@ -2,13 +2,9 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Ts_PostAction from "./Ts_PostAction";
-import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/Redux/hooks";
-import { setSelectedPost } from "@/Redux/Reducers/PostFeeds/PostSlice";
 
 interface Ts_PostProps {
   postId: number;
-  userId: number;
   postText?: string;
   hashTags?: string[];
   postImgs: string[];
@@ -17,23 +13,15 @@ interface Ts_PostProps {
   name: string;
   userName: string;
   userAvt: string;
-  created_at: number;
-  total_view: number;
-  total_like: number;
-  total_comment: number;
-  total_share: number;
-  ai_search_views: number;
 }
 
 const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
   const {
     postId,
-    userId,
     postText,
     userAvt,
     name,
     userName,
-    created_at,
     hashTags,
     postImgs = [],
     postVideos = [],
@@ -55,39 +43,11 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
   const urlsInText = postText?.match(urlRegex) || [];
   const mainText = postText?.replace(urlRegex, "").trim() || "";
 
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-
-  const openPost = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    dispatch(setSelectedPost(post));
-    router.push(`/post/${post.postId}`);
-  };
-
-  const openUserProfile = (e: React.MouseEvent, userId: number) => {
-    e.stopPropagation(); // 🚨 prevents post open
-    router.push(`/profile/${userId}/post`);
-  };
-
-  const timeAgo = (timestamp: number) => {
-    const seconds = Math.floor(Date.now() / 1000 - timestamp);
-
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
-
-    return `${Math.floor(seconds / 86400)}d`;
-  };
-
   return (
-    <div className="top-area" onClick={openPost} style={{ cursor: "pointer" }}>
+    <div className="top-area">
       {/* Profile Header */}
       <div className="profile-area d-center justify-content-between">
-        <div
-          className="avatar-item d-flex gap-3 align-items-center"
-          onClick={(e) => openUserProfile(e, post.userId)}
-          style={{ cursor: "pointer" }}
-        >
+        <div className="avatar-item d-flex gap-3 align-items-center">
           <div className="avatar position-relative">
             <div
               style={{
@@ -109,10 +69,8 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
             </div>
           </div>
           <div className="info-area">
-            <h6 className="m-0 d-flex align-items-baseline gap-2">
-              {/* <Link href="/public-profile/post">{name}</Link> */}
-              <span className="fw-bold">{name}</span>
-              <span className="small">· {timeAgo(created_at)}</span>
+            <h6 className="m-0">
+              <Link href="/public-profile/post">{name}</Link>
             </h6>
             <span className="mdtxt status">@{userName}</span>
           </div>
@@ -133,10 +91,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
               {mainText.length > 180 && (
                 <button
                   className="see-more-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowFullText((prev) => !prev);
-                  }}
+                  onClick={() => setShowFullText((prev) => !prev)}
                 >
                   {showFullText ? "less" : "more"}
                 </button>
@@ -171,7 +126,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
           </a>
         ))}
 
-        <p className="description">{postId}</p>
+        {/* <p className="description">{postId}</p> */}
         {hashTags && (
           <p className="hastag d-flex gap-2">
             {hashTags?.map((tag) => (
@@ -188,10 +143,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
           className={`post-media-container ${
             postImgs.length > 1 ? "clickable" : ""
           }`}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleImageClick();
-          }}
+          onClick={handleImageClick}
         >
           <Image
             src={postImgs[currentImgIndex] || "/images/default-post.png"}
@@ -224,7 +176,21 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
           {postPdfs.map((pdfUrl, idx) => (
             <div key={idx} className="pdf-item">
               <Link href={pdfUrl} target="_blank" rel="noopener noreferrer">
-                <Image src={pdfUrl} alt="PDF" width={80} height={80} />
+                {/* <Image src={pdfUrl} alt="PDF" width={80} height={80} /> */}
+                <div
+                  style={{
+                    width: 80,
+                    height: 80,
+                    border: "1px solid #f05a28",
+                    borderRadius: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold",
+                  }}
+                >
+                  PDF
+                </div>
                 <p>View PDF {postPdfs.length > 1 ? idx + 1 : ""}</p>
               </Link>
             </div>

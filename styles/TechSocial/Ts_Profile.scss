@@ -16,3 +16,22 @@
   border-radius: 50%;
   border: 3px solid #f05a28;
 }
+// Profile pic ends
+// Repost alignment starts
+// .original-post-wrapper {
+//   position: relative;
+// }
+
+// .original-post-card {
+//   background: var(--card-bg, #fff);
+//   border: 1px solid #e6e6e6;
+// }
+.repost-header {
+  .chat-btn {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  i {
+    color: #f05a28;
+  }
+}
+// Repost alignment ends

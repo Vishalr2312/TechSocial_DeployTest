@@ -82,11 +82,15 @@ const Contact = ({ children }: ContactProps) => {
           PAYLOAD: {},
         });
 
-        console.log("API Response:", response);
+        if (response?.data?.data?.errors) {
+          const errors = response.data.data.errors;
+          const firstField = Object.keys(errors)[0] as keyof typeof errors;
+          const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
+          toast.error(firstMessage);
+          return;
+        }
 
         const users = response?.data?.data?.user;
-
-        console.log("Users data:", users);
 
         if (!users || users.length === 0) {
           console.log("No users found in response");

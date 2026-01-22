@@ -5,6 +5,7 @@ import { useAppSelector } from "@/Redux/hooks";
 import Link from "next/link";
 import Ts_ProfileLikedPostFeeds from "./Liked-Posts/Ts_ProfileLikedPostFeeds";
 import Contact from "@/components/common/Contact";
+import SidebarFooter from "../../home/menu/Components/SidebarFooter";
 
 interface BioItem {
   id: number;
@@ -21,7 +22,7 @@ const Ts_ProfileLikedPosts = () => {
       ? { id: 1, type: user.email, icon: "mail", class: "link" }
       : null,
 
-    user?.phone ? { id: 2, type: user.phone, icon: "call", class: "" } : null,
+    // user?.phone ? { id: 2, type: user.phone, icon: "call", class: "" } : null,
 
     user?.website
       ? { id: 3, type: user.website, icon: "language", class: "link" }
@@ -112,17 +113,19 @@ const Ts_ProfileLikedPosts = () => {
           </div>
           <div className="cus-scrollbar side-wrapper">
             <div className="sidebar-wrapper d-flex flex-column gap-6 max-width">
-              <div className="sidebar-area post-item p-5">
-                {/* Photos */}
+              {/* <div className="sidebar-area post-item p-5">
                 <Photos />
-              </div>
+              </div> */}
               <div className="sidebar-area p-5">
                 {/* Contact */}
                 <Contact>
                   <div className="mb-4">
-                    <h6 className="d-inline-flex">Contact</h6>
+                    <h6 className="d-inline-flex">You might like</h6>
                   </div>
                 </Contact>
+              </div>
+              <div className="p-5">
+                <SidebarFooter />
               </div>
             </div>
           </div>

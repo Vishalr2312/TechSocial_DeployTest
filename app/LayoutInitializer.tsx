@@ -15,6 +15,7 @@ import { SignInResponseInterface } from "@/Type/User/SignInType";
 import { signInUser } from "@/Redux/Reducers/UserSlice";
 import TsAuthPopups from "@/components/modals/TechSocial/TsAuthPopups";
 import TsHomePopups from "@/components/modals/TechSocial/TsHomePopups";
+import TsProfilePopups from "@/components/modals/TechSocial/TsProfilePopups";
 
 interface ApiResponse {
   data: SignInResponseInterface;
@@ -116,6 +117,7 @@ const LayoutInitializer = ({ children }: { children: React.ReactNode }) => {
       {config.showBottomMenu && <BottomMenu />}
       <TsAuthPopups />
       <TsHomePopups />
+      <TsProfilePopups />
       {children}
       <ToastContainer position="top-right" autoClose={1000} theme="dark" />
     </>

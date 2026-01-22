@@ -1,35 +1,41 @@
 "use client";
 
 import React, { useEffect, useState, createContext, useContext } from "react";
-import Ts_ProfileBanner from "./Components/Ts_ProfileBanner";
-import { UserProfile } from "@/Type/Profile/Ts_Profile";
 import axiosCall from "@/Utils/APIcall";
 import { toast } from "react-toastify";
 import { useAppDispatch } from "@/Redux/hooks";
+import { UserPublicProfile } from "@/Type/Profile/Ts_PublicProfile";
 import {
-  setProfileLoading,
-  setUserProfile,
-} from "@/Redux/Reducers/Profile/ProfileSlice";
+  setPublicProfileLoading,
+  setUserPublicProfile,
+} from "@/Redux/Reducers/Profile/PublicProfileSlice";
+import Ts_PublicProfileBanner from "./Components/Ts_PublicProfileBanner";
 
 export interface ApiResponse {
   status: number;
   success: boolean;
   message: string;
   data: {
-    user: UserProfile;
+    user: UserPublicProfile;
     errors?: any;
   };
 }
 
-const Ts_Profile = ({ children }: { children: React.ReactNode }) => {
+interface TsPublicProfileProps {
+  userId: number;
+  children: React.ReactNode;
+}
+
+const Ts_PublicProfile = ({ userId, children }: TsPublicProfileProps) => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const fetchInterestList = async () => {
+    if (!userId) return;
+    const fetchPublicProfile = async () => {
       try {
-        dispatch(setProfileLoading(true));
+        dispatch(setPublicProfileLoading(true));
         const response = await axiosCall<ApiResponse>({
-          ENDPOINT: `users/profile?expand=totalFollowing,totalFollower,totalActivePost,userLiveDetail,giftSummary,userSetting,interest,language,featureList`,
+          ENDPOINT: `users/${userId}?expand=totalFollowing,totalFollower,totalActivePost,userLiveDetail,giftSummary,userSetting,interest,language,featureList`,
           METHOD: "GET",
         });
         if (response?.data?.data?.errors) {
@@ -40,19 +46,19 @@ const Ts_Profile = ({ children }: { children: React.ReactNode }) => {
           return;
         }
         if (response?.data?.data?.user) {
-          dispatch(setUserProfile(response.data.data.user));
+          dispatch(setUserPublicProfile(response.data.data.user));
         }
       } catch (error: any) {
         toast.error(
           error?.response?.data?.message || "Failed to fetch interest list",
         );
       } finally {
-        dispatch(setProfileLoading(false));
+        dispatch(setPublicProfileLoading(false));
       }
     };
 
-    fetchInterestList();
-  }, [dispatch]);
+    fetchPublicProfile();
+  }, [dispatch, userId]);
 
   return (
     <main className="main-content">
@@ -61,7 +67,7 @@ const Ts_Profile = ({ children }: { children: React.ReactNode }) => {
           <div className="col-lg-12">
             {/* Profile Edit Banner */}
             {/* <ProfileEditBanner /> */}
-            <Ts_ProfileBanner />
+            <Ts_PublicProfileBanner />
           </div>
         </div>
         <div className="row sidebar-toggler">
@@ -73,4 +79,4 @@ const Ts_Profile = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default Ts_Profile;
+export default Ts_PublicProfile;

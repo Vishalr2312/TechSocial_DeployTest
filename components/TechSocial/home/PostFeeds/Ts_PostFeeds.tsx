@@ -20,11 +20,13 @@ interface ApiResponse {
 
 interface Ts_PostProps {
   postId: number;
+  userId: number;
   postText?: string;
   hashTags?: string[];
   postImgs: string[];
   postVideos?: string[];
   postPdfs?: string[];
+  isVideoPost?: boolean;
   name: string;
   userName: string;
   userAvt: string;
@@ -58,11 +60,13 @@ const Ts_PostFeeds = ({ clss = "", reaction = "" }) => {
 
     return {
       postId: post.id,
+      userId: post.user.id,
       postText: post.description || post.title || "",
       hashTags: post.hashtags || [],
       postImgs: images.map((i) => i.filenameUrl || i.filename),
       postVideos: videos.map((v) => v.filenameUrl || v.filename),
       postPdfs: pdfs.map((p) => p.filenameUrl || p.filename),
+      isVideoPost: videos.length > 0,
       name: post.user.name,
       userName: post.user.username,
       userAvt: post.user.picture || "",
@@ -175,7 +179,7 @@ const Ts_PostFeeds = ({ clss = "", reaction = "" }) => {
       {displayedPosts.map((post) => (
         <div key={post.postId} className={`post-single-box ${clss}`}>
           <Ts_Post post={post} />
-          <Ts_PostReaction post={post} />
+          <Ts_PostReaction post={post} isVideoPost={post.isVideoPost} />
         </div>
       ))}
       {loading && <DarkLoader />}

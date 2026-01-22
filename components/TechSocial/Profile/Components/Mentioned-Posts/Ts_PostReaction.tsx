@@ -2,8 +2,10 @@ import Image from "next/image";
 import avatar_2 from "/public/images/avatar-2.png";
 import avatar_3 from "/public/images/avatar-3.png";
 import avatar_4 from "/public/images/avatar-4.png";
+import { useRouter } from "next/navigation";
 
 interface Ts_PostReactionProps {
+  postId: number;
   total_view: number;
   total_like: number;
   total_comment: number;
@@ -11,14 +13,10 @@ interface Ts_PostReactionProps {
   ai_search_views: number;
 }
 
-const Ts_PostReaction = ({
-  post,
-  isVideoPost = false,
-}: {
-  post: Ts_PostReactionProps;
-  isVideoPost?: boolean;
-}) => {
+const Ts_PostReaction = ({ post }: { post: Ts_PostReactionProps }) => {
+  const router = useRouter();
   const {
+    postId,
     total_view,
     total_like,
     total_comment,
@@ -67,7 +65,10 @@ const Ts_PostReaction = ({
           )}
         </div>
         <div className="d-center flex-wrap">
-          <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
+          <button
+            className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
+            onClick={() => router.push(`/post/${post.postId}`)}
+          >
             <i
               className="material-symbols-outlined mat-icon"
               style={{ fontSize: "20px" }}
@@ -80,65 +81,63 @@ const Ts_PostReaction = ({
             <span style={{ fontSize: "15px" }}>{total_comment}</span>
           )}
         </div>
-        {!isVideoPost && (
-          <div className="d-center flex-wrap">
-            <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
-              <div
+        <div className="d-center flex-wrap">
+          <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "24px",
+                height: "24px",
+              }}
+              onClick={() => (window.location.href = "/explore-ai")}
+            >
+              <svg
+                viewBox="0 0 100 100"
+                xmlns="http://www.w3.org/2000/svg"
+                className="ai-icon"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "24px",
-                  height: "24px",
+                  width: "100%",
+                  height: "100%",
                 }}
-                onClick={() => (window.location.href = "/explore-ai")}
               >
-                <svg
-                  viewBox="0 0 100 100"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="ai-icon"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                  }}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="28"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="6"
+                />
+                <line
+                  x1="68"
+                  y1="68"
+                  x2="85"
+                  y2="85"
+                  stroke="white"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                />
+                <text
+                  x="50"
+                  y="53"
+                  fontFamily="Arial, sans-serif"
+                  fontSize="24"
+                  fontWeight="bold"
+                  fill="white"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
                 >
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="28"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="6"
-                  />
-                  <line
-                    x1="68"
-                    y1="68"
-                    x2="85"
-                    y2="85"
-                    stroke="white"
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                  />
-                  <text
-                    x="50"
-                    y="53"
-                    fontFamily="Arial, sans-serif"
-                    fontSize="24"
-                    fontWeight="bold"
-                    fill="white"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    AI
-                  </text>
-                </svg>
-              </div>
-            </button>
-            {ai_search_views > 0 && (
-              <span style={{ fontSize: "15px" }}>{ai_search_views}</span>
-            )}
-          </div>
-        )}
+                  AI
+                </text>
+              </svg>
+            </div>
+          </button>
+          {ai_search_views > 0 && (
+            <span style={{ fontSize: "15px" }}>{ai_search_views}</span>
+          )}
+        </div>
         <div className="d-center flex-wrap">
           <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
             <i
@@ -168,6 +167,14 @@ const Ts_PostReaction = ({
           )}
         </div>
       </div>
+      {/* <div className="px-3 d-center flex-wrap gap-5 gap-md-0 justify-content-between">
+        <button
+          className="d-center justify-content-start mdtxt chat-btn"
+          style={{ whiteSpace: "nowrap" }}
+        >
+          View {total_comment} Comments
+        </button>
+      </div> */}
     </>
   );
 };

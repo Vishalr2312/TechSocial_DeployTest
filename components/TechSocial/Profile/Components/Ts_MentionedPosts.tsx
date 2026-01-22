@@ -3,9 +3,9 @@
 import Photos from "@/components/marketplacePost/Photos";
 import { useAppSelector } from "@/Redux/hooks";
 import Link from "next/link";
-import Ts_ProfileRepostFeeds from "./Reposts/Ts_ProfileRepostFeeds";
 import Contact from "@/components/common/Contact";
 import SidebarFooter from "../../home/menu/Components/SidebarFooter";
+import Ts_MentionedPostFeeds from "./Mentioned-Posts/Ts_MentionedPostFeeds";
 
 interface BioItem {
   id: number;
@@ -14,7 +14,7 @@ interface BioItem {
   class: string;
 }
 
-const Ts_ProfileReposts = () => {
+const Ts_MentionedPosts = () => {
   const user = useAppSelector((state) => state.profile.user);
 
   const bioData: BioItem[] = [
@@ -46,7 +46,7 @@ const Ts_ProfileReposts = () => {
         }
       : null,
   ].filter((item): item is BioItem => item !== null);
-  // console.log("User in Ts_ProfilePost:", user);
+  // console.log("User in Ts_MentionedPosts:", user);
   return (
     <>
       <div className="col-xxl-3 col-xl-3 col-lg-4 col-6 cus-z2">
@@ -99,7 +99,7 @@ const Ts_ProfileReposts = () => {
         {/* <MakePost /> */}
 
         {/* Feeds */}
-        <Ts_ProfileRepostFeeds clss="p-3 p-sm-5" />
+        <Ts_MentionedPostFeeds clss="p-3 p-sm-5" />
       </div>
       <div className="col-xxl-3 col-xl-4 col-lg-4 col-6 mt-5 mt-xl-0">
         <div className="cus-overflow cus-scrollbar sidebar-head">
@@ -135,4 +135,4 @@ const Ts_ProfileReposts = () => {
   );
 };
 
-export default Ts_ProfileReposts;
+export default Ts_MentionedPosts;

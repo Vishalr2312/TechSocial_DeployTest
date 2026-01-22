@@ -1,6 +1,6 @@
-import { SignInResponseInterface, UserInterface } from '@/Type/User/SignInType';
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import secureLocalStorage from 'react-secure-storage';
+import { SignInResponseInterface, UserInterface } from "@/Type/User/SignInType";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import secureLocalStorage from "react-secure-storage";
 
 interface UserState {
   isAuthenticated: boolean;
@@ -19,7 +19,7 @@ const initialState: UserState = {
 };
 
 const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     signInUser: (state, action: PayloadAction<SignInResponseInterface>) => {
@@ -33,14 +33,18 @@ const userSlice = createSlice({
       state.token = null;
     },
 
+    setUser: (state, action: PayloadAction<UserInterface | null>) => {
+      state.user = action.payload;
+    },
+
     updateUser: (state, action) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
-        secureLocalStorage.setItem('userData', JSON.stringify(state.user));
+        secureLocalStorage.setItem("userData", JSON.stringify(state.user));
       }
     },
   },
 });
 
-export const { updateUser, signInUser, signOutUser } = userSlice.actions;
+export const { updateUser, signInUser, setUser, signOutUser } = userSlice.actions;
 export default userSlice.reducer;
