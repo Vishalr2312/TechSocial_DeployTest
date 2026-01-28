@@ -4,15 +4,16 @@ import axiosCall from "@/Utils/APIcall";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DarkLoader from "../Loader/DarkLoader";
 import { toast } from "react-toastify";
-import Ts_Post from "./Ts_Post";
 import { useAppSelector } from "@/Redux/hooks";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Ts_PostReaction from "./Ts_PostReaction";
-import Ts_WriteComment from "./Ts_WriteComment";
-import Ts_ParentComment from "./Ts_ParentComment";
-import Ts_TwitterComment from "./Ts_TwitterComment";
 import { UserList, UserListData } from "@/Type/SearchUsers/SearchUsers";
+import Ts_Post from "./Ts_Post";
+import Ts_PostReaction from "./Ts_PostReaction";
+import Ts_ParentComment from "./Ts_ParentComment";
+import { getParentCommentCache } from "@/Utils/commentCache";
+import Ts_CommentReplies from "./Ts_CommentReplies";
+import Ts_WriteComment from "./Ts_WriteComment";
 
 export interface CommentApiResponse {
   status: number;
@@ -62,15 +63,21 @@ interface Ts_PostProps {
   ai_search_views: number;
 }
 
-interface Ts_PostCommentProps {
+interface Ts_ChildCommentProps {
   clss?: string;
+  commentId: number;
   postId: number;
 }
 
-const Ts_PostComment = ({ clss = "", postId }: Ts_PostCommentProps) => {
+const Ts_ChildComment = ({
+  clss = "",
+  commentId,
+  postId,
+}: Ts_ChildCommentProps) => {
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   // const didFetchComments = useRef(false);
+  const [parentComment, setParentComment] = useState<CommentItem | null>(null);
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -95,28 +102,24 @@ const Ts_PostComment = ({ clss = "", postId }: Ts_PostCommentProps) => {
   };
 
   const handleToggleLike = async (commentId: number) => {
-    // setComments((prev) =>
-    //   prev.map((c) =>
-    //     c.id === commentId
-    //       ? {
-    //           ...c,
-    //           isLike: !c.isLike,
-    //           // total_like: c.isLike
-    //           //   ? (c.total_like ?? 1) - 1
-    //           //   : (c.total_like ?? 0) + 1,
-    //         }
-    //       : c,
-    //   ),
-    // );
+    // 🔥 optimistic update for parent comment
+    setParentComment((prev) =>
+      prev && prev.id === commentId ? { ...prev, isLike: !prev.isLike } : prev,
+    );
 
-    const target = comments.find((c) => c.id === commentId);
-    if (!target) return;
-
+    // optimistic update for child comments
     setComments((prev) =>
       prev.map((c) => (c.id === commentId ? { ...c, isLike: !c.isLike } : c)),
     );
 
     try {
+      const target =
+        parentComment?.id === commentId
+          ? parentComment
+          : comments.find((c) => c.id === commentId);
+
+      if (!target) return;
+
       const res = await axiosCall<LikeUnlikeApiResponse>({
         ENDPOINT: target.isLike ? "comments/unlike" : "comments/like",
         METHOD: "POST",
@@ -125,23 +128,19 @@ const Ts_PostComment = ({ clss = "", postId }: Ts_PostCommentProps) => {
           source_type: 1,
         },
       });
-      // const data = res?.data?.data
       toast.success(res?.data?.message);
-    } catch (error) {
-      // 🔴 rollback if API fails
-      // setComments((prev) =>
-      //   prev.map((c) =>
-      //     c.id === commentId
-      //       ? {
-      //           ...c,
-      //           isLike: target.isLike,
-      //           // total_like: target.total_like,
-      //         }
-      //       : c,
-      //   ),
-      // );
-      setComments((prev) => prev.map((c) => (c.id === commentId ? target : c)));
+    } catch {
+      // rollback parent
+      setParentComment((prev) =>
+        prev && prev.id === commentId
+          ? { ...prev, isLike: !prev.isLike }
+          : prev,
+      );
 
+      // rollback children
+      setComments((prev) =>
+        prev.map((c) => (c.id === commentId ? { ...c, isLike: !c.isLike } : c)),
+      );
       toast.error("Failed to update like");
     }
   };
@@ -169,43 +168,12 @@ const Ts_PostComment = ({ clss = "", postId }: Ts_PostCommentProps) => {
     }
   };
 
-  // useEffect(() => {
-  //   if (!postId) return;
-  //   if (didFetchComments.current) return;
-  //   didFetchComments.current = true;
-
-  //   const fetchComments = async () => {
-  //     try {
-  //       setLoadingComments(true);
-
-  //       const response = await axiosCall<CommentApiResponse>({
-  //         ENDPOINT: `posts/comment-list?post_id=${postId}`,
-  //         METHOD: "GET",
-  //       });
-
-  //       // ❌ API-level validation
-  //       if (response?.data?.data?.comment?.errors) {
-  //         const errors = response.data.data.comment.errors;
-  //         const firstField = Object.keys(errors)[0] as keyof typeof errors;
-  //         const firstMessage =
-  //           errors[firstField]?.[0] ?? "Failed to fetch comments";
-  //         toast.error(firstMessage);
-  //         return;
-  //       }
-
-  //       // ✅ Success
-  //       setComments(response?.data?.data?.comment.items ?? []);
-  //     } catch (error: any) {
-  //       toast.error(
-  //         error?.response?.data?.message || "Failed to fetch comments"
-  //       );
-  //     } finally {
-  //       setLoadingComments(false);
-  //     }
-  //   };
-
-  //   fetchComments();
-  // }, [postId]);
+  useEffect(() => {
+    const cached = getParentCommentCache(commentId);
+    if (cached) {
+      setParentComment(cached);
+    }
+  }, [commentId]);
 
   useEffect(() => {
     if (!postId || !hasMore) return;
@@ -215,7 +183,7 @@ const Ts_PostComment = ({ clss = "", postId }: Ts_PostCommentProps) => {
         setLoadingComments(true);
 
         const response = await axiosCall<CommentApiResponse>({
-          ENDPOINT: `posts/comment-list?post_id=${postId}&page=${page}&expand=user,isLike`,
+          ENDPOINT: `posts/comment-list?post_id=${postId}&parent_id=${commentId}&page=${page}&expand=user`,
           METHOD: "GET",
         });
 
@@ -251,7 +219,7 @@ const Ts_PostComment = ({ clss = "", postId }: Ts_PostCommentProps) => {
     };
 
     fetchComments();
-  }, [postId, page, hasMore]);
+  }, [postId, commentId, page, hasMore]);
 
   useEffect(() => {
     setComments([]);
@@ -299,35 +267,60 @@ const Ts_PostComment = ({ clss = "", postId }: Ts_PostCommentProps) => {
         {/* </button> */}
         <Ts_Post post={post} />
         <Ts_PostReaction post={post} />
-        <Ts_WriteComment
-          postId={postId}
-          onCommentAdded={(newComment) => {
-            setComments((prev) => [newComment, ...prev]);
-            setPage(1);
-            setHasMore(true);
-          }}
-        />
-        {/* {comments
-          ? comments.map((comment) => (
-              <div key={comment.id} className="comments-area mt-5">
-                <div className="single-comment-area ms-1 ms-xxl-15">
-                  <Ts_ParentComment comment={comment} />
-                </div>
-              </div>
-            ))
-          : ""} */}
-        {comments.map((comment) => (
+        {parentComment && (
+          <div className="comments-area mt-5">
+            <Ts_ParentComment
+              postId={postId}
+              comment={parentComment}
+              onDelete={handleDeleteComment}
+              onLikeToggle={handleToggleLike}
+              onReport={handleReportComment}
+            />
+          </div>
+        )}
+        {/* <div>
+          <Ts_ParentCommentReaction
+          // comment={comment}
+          // commentId={comment.id}
+          // postId={postId}
+          // replyCount={replyCount}
+          // onDelete={onDelete}
+          />
+        </div> */}
+        {/* {comments.map((comment) => (
           <div key={comment.id} className="comments-area mt-5">
             <Ts_ParentComment
               key={comment.id}
               postId={postId}
               comment={comment}
               onDelete={handleDeleteComment}
-              onLikeToggle={handleToggleLike}
-              onReport={handleReportComment}
             />
           </div>
-        ))}
+        ))} */}
+        <Ts_WriteComment
+          postId={postId}
+          commentId={commentId}
+          onCommentAdded={(newComment) => {
+            setComments((prev) => [newComment, ...prev]);
+            setPage(1);
+            setHasMore(true);
+          }}
+        />
+        {comments
+          ? comments.map((comment) => (
+              <div key={comment.id} className="comments-area mt-5">
+                {/* <div className="single-comment-area ms-1 ms-xxl-15"> */}
+                <Ts_CommentReplies
+                  comment={comment}
+                  postId={postId}
+                  onDelete={handleDeleteComment}
+                  onLikeToggle={handleToggleLike}
+                  onReport={handleReportComment}
+                />
+                {/* </div> */}
+              </div>
+            ))
+          : ""}
         {hasMore && !loadingComments && (
           <div className="text-center mt-3">
             <button
@@ -349,4 +342,4 @@ const Ts_PostComment = ({ clss = "", postId }: Ts_PostCommentProps) => {
   );
 };
 
-export default Ts_PostComment;
+export default Ts_ChildComment;

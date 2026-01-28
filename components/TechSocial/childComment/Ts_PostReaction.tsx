@@ -3,32 +3,26 @@ import avatar_2 from "/public/images/avatar-2.png";
 import avatar_3 from "/public/images/avatar-3.png";
 import avatar_4 from "/public/images/avatar-4.png";
 import { useRouter } from "next/navigation";
-import { setParentCommentCache } from "@/Utils/commentCache";
-import { useAppSelector } from "@/Redux/hooks";
 
-interface Ts_CommentReactionProps {
-  comment: CommentItem;
-  commentId: number;
+interface Ts_PostReactionProps {
   postId: number;
-  replyCount: number;
-  onDelete: (commentId: number) => void;
-  onReport: (commentId: number) => void;
-  onLikeToggle: (commentId: number) => void;
+  total_view: number;
+  total_like: number;
+  total_comment: number;
+  total_share: number;
+  ai_search_views: number;
 }
 
-const Ts_CommentReaction = ({
-  comment,
-  commentId,
-  postId,
-  replyCount,
-  onDelete,
-  onReport,
-  onLikeToggle,
-}: Ts_CommentReactionProps) => {
+const Ts_PostReaction = ({ post }: { post: Ts_PostReactionProps }) => {
   const router = useRouter();
-  const currentUser = useAppSelector((state) => state.user.user);
-  const isOwner = comment.user?.id === currentUser?.id;
-
+  const {
+    postId,
+    total_view,
+    total_like,
+    total_comment,
+    total_share,
+    ai_search_views,
+  } = post;
   return (
     <>
       {/* <div
@@ -55,14 +49,25 @@ const Ts_CommentReaction = ({
           <button className="mdtxt">1 Shares</button>
         </div>
       </div> */}
-      <div className="py-2 d-center flex-wrap gap-5 gap-md-0 justify-content-between">
+      <div className="py-5 px-3 d-center flex-wrap gap-5 gap-md-0 justify-content-between">
+        <div className="d-center flex-wrap">
+          <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
+            <i
+              className="material-symbols-outlined mat-icon"
+              style={{ fontSize: "20px" }}
+            >
+              {" "}
+              thumb_up{" "}
+            </i>
+          </button>
+          {total_like > 0 && (
+            <span style={{ fontSize: "15px" }}>{total_like}</span>
+          )}
+        </div>
         <div className="d-center flex-wrap">
           <button
             className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
-            onClick={() => {
-              setParentCommentCache(comment);
-              router.push(`/post/${postId}/comment/${commentId}`);
-            }}
+            onClick={() => router.push(`/post/${post.postId}`)}
           >
             <i
               className="material-symbols-outlined mat-icon"
@@ -72,31 +77,11 @@ const Ts_CommentReaction = ({
               comment{" "}
             </i>
           </button>
-          {replyCount > 0 && (
-            <span style={{ fontSize: "15px" }}>{replyCount}</span>
+          {total_comment > 0 && (
+            <span style={{ fontSize: "15px" }}>{total_comment}</span>
           )}
         </div>
         <div className="d-center flex-wrap">
-          <button
-            className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
-            onClick={() => onLikeToggle(comment.id)}
-          >
-            <i
-              className="material-symbols-outlined mat-icon"
-              style={{
-                fontSize: "20px",
-                color: comment.isLike ? "#f05a28" : "inherit",
-              }}
-            >
-              {" "}
-              thumb_up{" "}
-            </i>
-          </button>
-          {/* {total_like > 0 && (
-            <span style={{ fontSize: "15px" }}>{total_like}</span>
-          )} */}
-        </div>
-        {/* <div className="d-center flex-wrap">
           <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
             <div
               style={{
@@ -152,59 +137,46 @@ const Ts_CommentReaction = ({
           {ai_search_views > 0 && (
             <span style={{ fontSize: "15px" }}>{ai_search_views}</span>
           )}
-        </div> */}
-        {isOwner ? (
-          <div className="d-center flex-wrap">
-            <button
-              className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
-              onClick={() => {
-                if (confirm("Are you sure you want to delete this comment?")) {
-                  onDelete(commentId);
-                }
-              }}
+        </div>
+        <div className="d-center flex-wrap">
+          <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
+            <i
+              className="material-symbols-outlined mat-icon"
+              style={{ fontSize: "20px" }}
             >
-              <i
-                className="material-symbols-outlined mat-icon"
-                style={{ fontSize: "20px" }}
-              >
-                {" "}
-                delete{" "}
-              </i>
-            </button>
-            {/* {total_view > 0 && (
-            <span style={{ fontSize: "15px" }}>{total_view}</span>
-          )} */}
-          </div>
-        ) : (
-          <div className="d-center flex-wrap">
-            <button
-              className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
-              onClick={() => onReport(comment.id)}
-            >
-              <i
-                className="material-symbols-outlined mat-icon"
-                style={{ fontSize: "20px" }}
-              >
-                {" "}
-                report{" "}
-              </i>
-            </button>
-            {/* {total_share > 0 && (
+              {" "}
+              upload{" "}
+            </i>
+          </button>
+          {total_share > 0 && (
             <span style={{ fontSize: "15px" }}>{total_share}</span>
-          )} */}
-          </div>
-        )}
+          )}
+        </div>
+        <div className="d-center flex-wrap">
+          <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
+            <i
+              className="material-symbols-outlined mat-icon"
+              style={{ fontSize: "20px" }}
+            >
+              {" "}
+              visibility{" "}
+            </i>
+          </button>
+          {total_view > 0 && (
+            <span style={{ fontSize: "15px" }}>{total_view}</span>
+          )}
+        </div>
       </div>
       {/* <div className="px-3 d-center flex-wrap gap-5 gap-md-0 justify-content-between">
         <button
           className="d-center justify-content-start mdtxt chat-btn"
           style={{ whiteSpace: "nowrap" }}
         >
-          View {replyCount} Comments
+          View {total_comment} Comments
         </button>
       </div> */}
     </>
   );
 };
 
-export default Ts_CommentReaction;
+export default Ts_PostReaction;

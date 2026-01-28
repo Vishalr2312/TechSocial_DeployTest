@@ -6,25 +6,25 @@ import { useRouter } from "next/navigation";
 import { setParentCommentCache } from "@/Utils/commentCache";
 import { useAppSelector } from "@/Redux/hooks";
 
-interface Ts_CommentReactionProps {
+interface Ts_ChildCommentReactionProps {
   comment: CommentItem;
   commentId: number;
   postId: number;
-  replyCount: number;
+  //   replyCount: number;
   onDelete: (commentId: number) => void;
   onReport: (commentId: number) => void;
   onLikeToggle: (commentId: number) => void;
 }
 
-const Ts_CommentReaction = ({
+const Ts_ChildCommentReaction = ({
   comment,
   commentId,
   postId,
-  replyCount,
+  //   replyCount,
   onDelete,
-  onReport,
   onLikeToggle,
-}: Ts_CommentReactionProps) => {
+  onReport,
+}: Ts_ChildCommentReactionProps) => {
   const router = useRouter();
   const currentUser = useAppSelector((state) => state.user.user);
   const isOwner = comment.user?.id === currentUser?.id;
@@ -55,14 +55,15 @@ const Ts_CommentReaction = ({
           <button className="mdtxt">1 Shares</button>
         </div>
       </div> */}
-      <div className="py-2 d-center flex-wrap gap-5 gap-md-0 justify-content-between">
-        <div className="d-center flex-wrap">
+      {/* <div className="py-2 d-center flex-wrap gap-5 gap-md-0 justify-content-between"> */}
+      <div className="py-2 d-flex flex-wrap gap-5 gap-md-0 align-items-center">
+        {/* <div className="d-center flex-wrap">
           <button
             className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
-            onClick={() => {
-              setParentCommentCache(comment);
-              router.push(`/post/${postId}/comment/${commentId}`);
-            }}
+            // onClick={() => {
+            //   setParentCommentCache(comment);
+            //   router.push(`/post/${postId}/comment/${commentId}`);
+            // }}
           >
             <i
               className="material-symbols-outlined mat-icon"
@@ -72,13 +73,13 @@ const Ts_CommentReaction = ({
               comment{" "}
             </i>
           </button>
-          {replyCount > 0 && (
+          {/* {replyCount > 0 && (
             <span style={{ fontSize: "15px" }}>{replyCount}</span>
           )}
-        </div>
+        </div> */}
         <div className="d-center flex-wrap">
           <button
-            className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
+            className="d-center gap-1 gap-sm-2 mdtxt chat-btn me-20"
             onClick={() => onLikeToggle(comment.id)}
           >
             <i
@@ -156,7 +157,7 @@ const Ts_CommentReaction = ({
         {isOwner ? (
           <div className="d-center flex-wrap">
             <button
-              className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
+              className="d-center gap-1 gap-sm-2 mdtxt chat-btn ms-20"
               onClick={() => {
                 if (confirm("Are you sure you want to delete this comment?")) {
                   onDelete(commentId);
@@ -178,7 +179,7 @@ const Ts_CommentReaction = ({
         ) : (
           <div className="d-center flex-wrap">
             <button
-              className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
+              className="d-center gap-1 gap-sm-2 mdtxt chat-btn ms-20"
               onClick={() => onReport(comment.id)}
             >
               <i
@@ -207,4 +208,4 @@ const Ts_CommentReaction = ({
   );
 };
 
-export default Ts_CommentReaction;
+export default Ts_ChildCommentReaction;

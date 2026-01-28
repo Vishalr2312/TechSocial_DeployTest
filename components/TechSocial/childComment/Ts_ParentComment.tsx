@@ -1,9 +1,10 @@
 import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
-import Ts_CommentReaction from "./Ts_CommentReaction";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axiosCall from "@/Utils/APIcall";
+import Ts_ChildComment from "./Ts_ChildComment";
+import Ts_ParentCommentReaction from "./Ts_ParentCommentReaction";
 
 interface CommentApiResponse {
   status: number;
@@ -61,67 +62,6 @@ const Ts_ParentComment = ({
   }, [comment.id, comment.post_id]);
 
   return (
-    // <div className="d-flex gap-3 py-3 border-bottom">
-    //   {/* Avatar */}
-    //   <div className="flex-shrink-0">
-    //     <div
-    //       style={{
-    //         width: 50,
-    //         height: 50,
-    //         borderRadius: "50%",
-    //         overflow: "hidden",
-    //         border: "1px solid #f05a28",
-    //       }}
-    //     >
-    //       <Image
-    //         src={comment.user?.picture || "/images/default-avatar.png"}
-    //         alt="avatar"
-    //         width={50}
-    //         height={50}
-    //         style={{ width: "100%", height: "100%", objectFit: "cover" }}
-    //       />
-    //     </div>
-    //   </div>
-
-    //   {/* Content */}
-    //   <div className="flex-grow-1">
-    //     {/* Header */}
-    //     <div className="d-flex align-items-center gap-2">
-    //       <h6 className="fw-semibold">
-    //         {comment.user?.username || "Unknown User"}
-    //       </h6>
-    //       <span className="small">· {timeAgo(comment.created_at)}</span>
-    //     </div>
-
-    //     {/* Comment content */}
-    //     {comment.type === 1 && <p className="mt-1">{comment.comment}</p>}
-
-    //     {comment.type === 2 && comment.filenameUrl && (
-    //       <div className="mt-2">
-    //         <Image
-    //           src={comment.filenameUrl}
-    //           alt="comment image"
-    //           width={300}
-    //           height={300}
-    //           className="rounded"
-    //           style={{
-    //             maxWidth: "100%",
-    //             height: "auto",
-    //             objectFit: "cover",
-    //           }}
-    //         />
-    //       </div>
-    //     )}
-
-    //     {/* Actions */}
-    //     <Ts_CommentReaction
-    //       commentId={comment.id}
-    //       postId={postId}
-    //       replyCount={replyCount}
-    //       onDelete={onDelete}
-    //     />
-    //   </div>
-    // </div>
     <>
       <div className="profile-area d-center justify-content-between">
         <div className="avatar-item d-flex gap-3 align-items-center">
@@ -160,7 +100,7 @@ const Ts_ParentComment = ({
           <Ts_PostAction />
         </div> */}
       </div>
-      <div className="border-bottom">
+      <div>
         {comment.type === 1 && <p className="mt-1 ps-16">{comment.comment}</p>}
 
         {comment.type === 2 && comment.filenameUrl && (
@@ -180,7 +120,7 @@ const Ts_ParentComment = ({
           </div>
         )}
         <div className="ps-16">
-          <Ts_CommentReaction
+          <Ts_ParentCommentReaction
             comment={comment}
             commentId={comment.id}
             postId={postId}

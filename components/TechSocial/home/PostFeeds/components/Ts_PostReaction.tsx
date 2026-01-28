@@ -2,13 +2,40 @@ import Image from "next/image";
 import avatar_2 from "/public/images/avatar-2.png";
 import avatar_3 from "/public/images/avatar-3.png";
 import avatar_4 from "/public/images/avatar-4.png";
+import { useAppDispatch } from "@/Redux/hooks";
+import { setSelectedPost } from "@/Redux/Reducers/PostFeeds/PostSlice";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import axiosCall from "@/Utils/APIcall";
+import { toast } from "react-toastify";
+
+interface LikeUnlikeApiResponse {
+  status: number;
+  message: string;
+  data: {
+    total_like: number;
+  };
+}
 
 interface Ts_PostReactionProps {
+  postId: number;
+  userId: number;
+  postText?: string;
+  hashTags?: string[];
+  postImgs: string[];
+  postVideos?: string[];
+  postPdfs?: string[];
+  name: string;
+  userName: string;
+  userAvt: string;
+  created_at: number;
+  is_like: boolean;
   total_view: number;
   total_like: number;
   total_comment: number;
   total_share: number;
   ai_search_views: number;
+  isFollowing: boolean;
 }
 
 const Ts_PostReaction = ({
@@ -18,7 +45,51 @@ const Ts_PostReaction = ({
   post: Ts_PostReactionProps;
   isVideoPost?: boolean;
 }) => {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const openPost = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(setSelectedPost(post));
+    router.push(`/post/${post.postId}`);
+  };
+
+  const [isLiked, setIsLiked] = useState(post.is_like);
+  const [likeCount, setLikeCount] = useState(post.total_like);
+  const [likeLoading, setLikeLoading] = useState(false);
+
+  const handleLikeToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (likeLoading) return;
+    setLikeLoading(true);
+
+    const willLike = !isLiked; // ✅ the new value
+    setIsLiked(willLike);
+    setLikeCount((prev) => (willLike ? prev + 1 : prev - 1));
+
+    try {
+      const res = await axiosCall<LikeUnlikeApiResponse>({
+        ENDPOINT: willLike ? "posts/like" : "posts/unlike",
+        METHOD: "POST",
+        PAYLOAD: { post_id: post.postId },
+      });
+
+      if (res?.data?.data?.total_like !== undefined) {
+        setLikeCount(res.data.data.total_like);
+      }
+      toast.success(res?.data?.message);
+    } catch {
+      // rollback
+      setIsLiked(post.is_like);
+      setLikeCount(post.total_like);
+      toast.error("Failed to update like");
+    } finally {
+      setLikeLoading(false);
+    }
+  };
+
   const {
+    is_like,
     total_view,
     total_like,
     total_comment,
@@ -53,20 +124,30 @@ const Ts_PostReaction = ({
       </div> */}
       <div className="py-5 px-3 d-center flex-wrap gap-5 gap-md-0 justify-content-between">
         <div className="d-center flex-wrap">
-          <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
+          <button
+            className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
+            onClick={handleLikeToggle}
+          >
             <i
               className="material-symbols-outlined mat-icon"
-              style={{ fontSize: "20px" }}
+              style={{
+                fontSize: "20px",
+                color: isLiked ? "#f05a28" : "inherit",
+              }}
             >
               {" "}
               thumb_up{" "}
             </i>
           </button>
-          {total_like > 0 && (
-            <span style={{ fontSize: "15px" }}>{total_like}</span>
+          {likeCount > 0 && (
+            <span style={{ fontSize: "15px" }}>{likeCount}</span>
           )}
         </div>
-        <div className="d-center flex-wrap">
+        <div
+          className="d-center flex-wrap"
+          onClick={openPost}
+          // style={{ cursor: "pointer" }}
+        >
           <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
             <i
               className="material-symbols-outlined mat-icon"

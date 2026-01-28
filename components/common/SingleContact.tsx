@@ -17,6 +17,7 @@ interface SingleContactProps {
 const SingleContact = ({ data }: SingleContactProps) => {
   // const { avt, id, name } = data;
   const { id, name, picture, isFollower, isFollowing } = data;
+  const firstLetter = name?.charAt(0).toUpperCase() || "?";
 
   const loggedInUserId = useAppSelector((state) => state.user.user?.id);
   const isOwnProfile = loggedInUserId === id;
@@ -29,7 +30,7 @@ const SingleContact = ({ data }: SingleContactProps) => {
     <>
       <div className="avatar-item d-flex gap-3 align-items-center">
         <div className="avatar-item">
-          <div
+          {/* <div
             style={{
               width: 48,
               height: 48,
@@ -46,6 +47,36 @@ const SingleContact = ({ data }: SingleContactProps) => {
               alt="avatar"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
+          </div> */}
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: "1px solid #f05a28",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              // backgroundColor: picture ? "transparent" : "#f05a28",
+              color: "#fff",
+              // fontSize: 20,
+              fontWeight: 600,
+              textTransform: "uppercase",
+            }}
+          >
+            {picture ? (
+              <Image
+                src={picture}
+                alt={`name`}
+                width={48}
+                height={48}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                priority
+              />
+            ) : (
+              <span>{firstLetter}</span>
+            )}
           </div>
         </div>
         <div className="info-area">

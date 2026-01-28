@@ -1,19 +1,7 @@
-import Image, { StaticImageData } from "next/image";
-import Link from "next/link";
-import Ts_CommentReaction from "./Ts_CommentReaction";
-import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import axiosCall from "@/Utils/APIcall";
+import Image from "next/image";
+import Ts_ChildCommentReaction from "./Ts_ChildCommentReaction";
 
-interface CommentApiResponse {
-  status: number;
-  message: string;
-  data: {
-    comment: CommentData;
-  };
-}
-
-interface Ts_ParentCommentProps {
+interface Props {
   comment: CommentItem;
   postId: number;
   onDelete: (commentId: number) => void;
@@ -21,105 +9,51 @@ interface Ts_ParentCommentProps {
   onLikeToggle: (commentId: number) => void;
 }
 
-const Ts_ParentComment = ({
+const Ts_CommentReplies = ({
   comment,
   postId,
   onDelete,
   onReport,
   onLikeToggle,
-}: Ts_ParentCommentProps) => {
-  const [replyCount, setReplyCount] = useState<number>(0);
-
+}: Props) => {
   const timeAgo = (timestamp: number) => {
     const seconds = Math.floor(Date.now() / 1000 - timestamp);
-
     if (seconds < 60) return `${seconds}s`;
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
-
     return `${Math.floor(seconds / 86400)}d`;
   };
 
-  useEffect(() => {
-    const fetchReplyCount = async () => {
-      try {
-        const res = await axiosCall<CommentApiResponse>({
-          ENDPOINT: `posts/comment-list?post_id=${comment.post_id}&parent_id=${comment.id}&page=1`,
-          METHOD: "GET",
-        });
-
-        const meta = res?.data?.data?.comment?._meta;
-        if (meta) {
-          setReplyCount(meta.totalCount);
-        }
-      } catch {
-        // silent fail is fine here
-      }
-    };
-
-    fetchReplyCount();
-  }, [comment.id, comment.post_id]);
-
   return (
-    // <div className="d-flex gap-3 py-3 border-bottom">
-    //   {/* Avatar */}
-    //   <div className="flex-shrink-0">
-    //     <div
-    //       style={{
-    //         width: 50,
-    //         height: 50,
-    //         borderRadius: "50%",
-    //         overflow: "hidden",
-    //         border: "1px solid #f05a28",
-    //       }}
-    //     >
-    //       <Image
-    //         src={comment.user?.picture || "/images/default-avatar.png"}
-    //         alt="avatar"
-    //         width={50}
-    //         height={50}
-    //         style={{ width: "100%", height: "100%", objectFit: "cover" }}
-    //       />
-    //     </div>
+    // <div className="d-flex gap-3">
+    //   <div
+    //     style={{
+    //       width: 40,
+    //       height: 40,
+    //       borderRadius: "50%",
+    //       overflow: "hidden",
+    //     }}
+    //   >
+    //     <Image
+    //       src={comment.user?.picture || "/images/default-avatar.png"}
+    //       alt="avatar"
+    //       width={40}
+    //       height={40}
+    //       style={{ objectFit: "cover" }}
+    //     />
     //   </div>
 
-    //   {/* Content */}
-    //   <div className="flex-grow-1">
-    //     {/* Header */}
+    //   <div>
     //     <div className="d-flex align-items-center gap-2">
-    //       <h6 className="fw-semibold">
-    //         {comment.user?.username || "Unknown User"}
+    //       <h6 className="fw-semibold mb-0">
+    //         {comment.user?.username}
     //       </h6>
-    //       <span className="small">· {timeAgo(comment.created_at)}</span>
+    //       <span className="small text-muted">
+    //         · {timeAgo(comment.created_at)}
+    //       </span>
     //     </div>
 
-    //     {/* Comment content */}
-    //     {comment.type === 1 && <p className="mt-1">{comment.comment}</p>}
-
-    //     {comment.type === 2 && comment.filenameUrl && (
-    //       <div className="mt-2">
-    //         <Image
-    //           src={comment.filenameUrl}
-    //           alt="comment image"
-    //           width={300}
-    //           height={300}
-    //           className="rounded"
-    //           style={{
-    //             maxWidth: "100%",
-    //             height: "auto",
-    //             objectFit: "cover",
-    //           }}
-    //         />
-    //       </div>
-    //     )}
-
-    //     {/* Actions */}
-    //     <Ts_CommentReaction
-    //       commentId={comment.id}
-    //       postId={postId}
-    //       replyCount={replyCount}
-    //       onDelete={onDelete}
-    //     />
+    //     <p className="mb-0">{comment.comment}</p>
     //   </div>
     // </div>
     <>
@@ -160,7 +94,7 @@ const Ts_ParentComment = ({
           <Ts_PostAction />
         </div> */}
       </div>
-      <div className="border-bottom">
+      <div>
         {comment.type === 1 && <p className="mt-1 ps-16">{comment.comment}</p>}
 
         {comment.type === 2 && comment.filenameUrl && (
@@ -180,11 +114,10 @@ const Ts_ParentComment = ({
           </div>
         )}
         <div className="ps-16">
-          <Ts_CommentReaction
+          <Ts_ChildCommentReaction
             comment={comment}
             commentId={comment.id}
             postId={postId}
-            replyCount={replyCount}
             onDelete={onDelete}
             onReport={onReport}
             onLikeToggle={onLikeToggle}
@@ -195,4 +128,4 @@ const Ts_ParentComment = ({
   );
 };
 
-export default Ts_ParentComment;
+export default Ts_CommentReplies;

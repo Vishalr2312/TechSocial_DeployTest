@@ -6,6 +6,15 @@ import ts_profile_avatar from "/public/images/add-post-avatar.png";
 import React, { useRef, useState } from "react";
 import Ts_Location_Modal from "./Modal/Ts_Location_Modal";
 import { useAppSelector } from "@/Redux/hooks";
+import axiosCall from "@/Utils/APIcall";
+
+interface CreatePostResponse {
+  status: number;
+  message: string;
+  data: {
+    post_id: number;
+  };
+}
 
 const PostInputs = () => {
   const currentUser = useAppSelector((state) => state.user.user);
@@ -17,6 +26,31 @@ const PostInputs = () => {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
     null,
   );
+
+  const MEDIA_TYPE = {
+    IMAGE: "1",
+    VIDEO: "2",
+    PDF: "7",
+    // GIF: "4",
+  };
+
+  const createPost = (title: string) => {
+    if (!title.trim()) {
+      throw new Error("Post title cannot be empty");
+    }
+
+    return axiosCall<CreatePostResponse>({
+      ENDPOINT: "posts",
+      METHOD: "POST",
+      PAYLOAD: {
+        type: "1", // PostType.basic
+        title: title.trim(),
+        gallary: [], // MUST be empty array
+        post_content_type: "1", // PostContentType.text
+        is_comment_enable: 1,
+      },
+    });
+  };
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const documentInputRef = useRef<HTMLInputElement | null>(null);
@@ -123,24 +157,41 @@ const PostInputs = () => {
     setGifs((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handlePost = () => {
-    console.log("User Post:", text);
-    if (location) {
-      console.log("User Location:", location.lat, location.lon);
+  const handlePost = async () => {
+    if (!text.trim()) return;
+    // console.log("User Post:", text);
+    // if (location) {
+    //   console.log("User Location:", location.lat, location.lon);
+    // }
+    // if (images.length > 0) {
+    //   console.log("Selected Images/Videos:", images);
+    // }
+    // if (documents.length > 0) {
+    //   console.log("Selected Pdfs/Documents:", documents);
+    // }
+    // if (gifs.length > 0) {
+    //   console.log("Selected Gifs:", gifs);
+    // }
+    // setText("");
+    // setimages([]);
+    // setDocuments([]);
+    // setGifs([]);
+    try {
+      const res = await createPost(text);
+
+      if (res.data.data.post_id) {
+        console.log("Post created:", res.data.data.post_id);
+        setText("");
+        window.location.pathname === "/";
+      }
+
+      setimages([]);
+      setDocuments([]);
+      setGifs([]);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to post");
     }
-    if (images.length > 0) {
-      console.log("Selected Images/Videos:", images);
-    }
-    if (documents.length > 0) {
-      console.log("Selected Pdfs/Documents:", documents);
-    }
-    if (gifs.length > 0) {
-      console.log("Selected Gifs:", gifs);
-    }
-    setText("");
-    setimages([]);
-    setDocuments([]);
-    setGifs([]);
   };
   return (
     <div className="share-post d-flex gap-3 gap-sm-5 p-3 p-sm-5">

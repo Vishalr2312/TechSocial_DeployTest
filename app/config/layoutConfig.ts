@@ -33,6 +33,11 @@ export const layoutConfig: Record<
     showBottomMenu: false,
     showScrollToTop: false,
   },
+  '/change-password': {
+    showNavBar: false,
+    showBottomMenu: false,
+    showScrollToTop: false,
+  },
   '/post': {
     showNavBar: true,
     showBottomMenu: true,

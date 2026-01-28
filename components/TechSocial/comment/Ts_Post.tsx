@@ -11,6 +11,7 @@ interface Ts_PostProps {
   postVideos?: string[];
   postPdfs?: string[];
   name: string;
+  created_at: number;
   userName: string;
   userAvt: string;
 }
@@ -21,6 +22,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
     postText,
     userAvt,
     name,
+    created_at,
     userName,
     hashTags,
     postImgs = [],
@@ -30,6 +32,16 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
 
   // ✅ Image carousel state
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
+
+  const timeAgo = (timestamp: number) => {
+    const seconds = Math.floor(Date.now() / 1000 - timestamp);
+
+    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+
+    return `${Math.floor(seconds / 86400)}d`;
+  };
 
   const handleImageClick = () => {
     if (postImgs.length > 1) {
@@ -69,8 +81,10 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
             </div>
           </div>
           <div className="info-area">
-            <h6 className="m-0">
-              <Link href="/public-profile/post">{name}</Link>
+            <h6 className="m-0 gap-2">
+              {/* <Link href="/public-profile/post">{name}</Link> */}
+              <span className="fw-bold">{name}</span>
+              <span className="small">· {timeAgo(created_at)}</span>
             </h6>
             <span className="mdtxt status">@{userName}</span>
           </div>

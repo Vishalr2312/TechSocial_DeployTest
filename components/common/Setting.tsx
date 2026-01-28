@@ -110,6 +110,12 @@ const Setting = ({ activeHandler }: { activeHandler: (a: string) => void }) => {
             </Link>
           </li>
           <li>
+            <Link href="/change-password" className="mdtxt">
+              <i className="material-symbols-outlined mat-icon"> key </i>
+              Change Password
+            </Link>
+          </li>
+          <li>
             <button className="ts_logout_btn mdtxt" onClick={handleLogout}>
               <i className="material-symbols-outlined mat-icon">
                 power_settings_new

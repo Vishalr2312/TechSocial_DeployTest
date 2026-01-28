@@ -54,10 +54,11 @@ interface CommentItem {
 
 interface Ts_WriteCommentProps {
   postId: number;
+  commentId: number;
   onCommentAdded: (comment: CommentItem) => void;
 }
 
-const Ts_WriteComment = ({ postId, onCommentAdded }: Ts_WriteCommentProps) => {
+const Ts_WriteComment = ({ postId, commentId, onCommentAdded }: Ts_WriteCommentProps) => {
   const currentUser = useAppSelector((state) => state.user.user);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -176,6 +177,7 @@ const Ts_WriteComment = ({ postId, onCommentAdded }: Ts_WriteCommentProps) => {
           METHOD: "POST",
           PAYLOAD: {
             post_id: postId,
+            parent_id: commentId,
             comment: comment.trim(),
             type: 1,
           },
@@ -213,7 +215,7 @@ const Ts_WriteComment = ({ postId, onCommentAdded }: Ts_WriteCommentProps) => {
 
   return (
     <form action="#" onSubmit={handleSubmit}>
-      <div className="d-flex mt-5 pb-5 gap-3 border-bottom">
+      <div className="d-flex mt-5 pb-5 gap-3">
         <div className="profile-box d-none d-xxl-block">
           <div
             style={{

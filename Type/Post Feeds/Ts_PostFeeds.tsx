@@ -96,7 +96,7 @@ interface PostItem {
   display_whose: number;
   share_link: string;
   postGallary: PostGalleryItem[];
-  is_like: number;
+  is_like: boolean;
   is_reported: number;
   is_promotion: number;
   is_saved: number;
@@ -203,8 +203,8 @@ interface User {
   is_like: number;
   is_match: number;
   profile_views: number;
-  isFollower: number;
-  isFollowing: number;
+  isFollower: boolean;
+  isFollowing: boolean;
 }
 
 interface PostGalleryItem {

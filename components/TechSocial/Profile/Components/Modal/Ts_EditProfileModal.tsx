@@ -5,7 +5,6 @@ import {
   SignInResponseInterface,
   SignInValidation,
 } from "@/Type/User/SignInType";
-import axiosCall from "@/Utils/APIcall";
 import { toast } from "react-toastify";
 import { Col, FormGroup, Label, Row } from "reactstrap";
 import { useEffect, useRef, useState } from "react";
@@ -16,8 +15,32 @@ import Cookies from "js-cookie";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import LightLoader from "@/components/TechSocial/Loader/LightLoader";
 import { EditProfileInitialValueType } from "@/Type/Profile/Ts_Profile";
+import Image from "next/image";
+import axiosCall from "@/Utils/TsAPIcall";
 
 interface ApiResponse {
+  data: [];
+  success: boolean;
+  message: string;
+  errors?: {
+    email?: string[];
+    username?: string[];
+    message?: string[];
+  };
+}
+
+interface ProfileImageApiResponse {
+  data: [];
+  success: boolean;
+  message: string;
+  errors?: {
+    email?: string[];
+    username?: string[];
+    message?: string[];
+  };
+}
+
+interface CoverImageApiResponse {
   data: [];
   success: boolean;
   message: string;
@@ -38,6 +61,8 @@ const Ts_EditProfileModal = () => {
 
   const [loading, setLoading] = useState(false);
   const [initialValues, setInitialValues] = useState<any>(null);
+  const [profilePreview, setProfilePreview] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   // const [showPassword, setShowPassword] = useState(false);
 
   // const togglePassword = () => setShowPassword((prev) => !prev);
@@ -106,7 +131,7 @@ const Ts_EditProfileModal = () => {
         return;
       }
       toast.success(response?.data?.message || "Profile updated successfully");
-      window.location.href = '/profile/post';
+      window.location.href = "/profile/post";
       // resetForm();
     } catch (error: any) {
       if (error.response) {
@@ -118,9 +143,55 @@ const Ts_EditProfileModal = () => {
       }
       setLoading(false);
     } finally {
-      if (window.location.pathname === '/profile/post') {
+      if (window.location.pathname === "/profile/post") {
         setLoading(false);
       }
+    }
+  };
+
+  const handleProfileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setProfilePreview(URL.createObjectURL(file));
+
+    const formData = new FormData();
+    formData.append("imageFile", file);
+
+    try {
+      await axiosCall<ProfileImageApiResponse>({
+        ENDPOINT: "users/update-profile-image",
+        METHOD: "POST",
+        PAYLOAD: formData,
+        // isFormData: true,
+      });
+      toast.success("Profile image updated");
+    } catch {
+      toast.error("Failed to update profile image");
+    }
+  };
+
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setCoverPreview(URL.createObjectURL(file));
+
+    const formData = new FormData();
+    formData.append("imageFile", file);
+
+    try {
+      await axiosCall<CoverImageApiResponse>({
+        ENDPOINT: "users/update-profile-cover-image",
+        METHOD: "POST",
+        PAYLOAD: formData,
+        // isFormData: true,
+      });
+      toast.success("Cover image updated");
+    } catch {
+      toast.error("Failed to update cover image");
     }
   };
 
@@ -151,6 +222,69 @@ const Ts_EditProfileModal = () => {
                       <h5>Edit Profile</h5>
                     </div>
                     <div className="mid-area">
+                      <div className="edit-profile-header">
+                        {/* -------- COVER IMAGE -------- */}
+                        <div className="cover-wrapper">
+                          <Image
+                            src={
+                              coverPreview ||
+                              currentUser?.coverImageUrl ||
+                              "/cover-placeholder.png"
+                            }
+                            alt="cover"
+                            fill
+                            priority
+                            unoptimized
+                            className="cover-img"
+                          />
+
+                          <div className="image-overlay">
+                            <label className="cover-edit-btn">
+                              <input
+                                type="file"
+                                hidden
+                                accept="image/*"
+                                onChange={handleCoverChange}
+                              />
+                              <i className="material-symbols-outlined">
+                                photo_camera
+                              </i>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* -------- PROFILE IMAGE -------- */}
+                        <div className="profile-wrapper">
+                          <div className="profile-inner">
+                            <Image
+                              src={
+                                profilePreview ||
+                                currentUser?.picture ||
+                                "/avatar-placeholder.png"
+                              }
+                              alt="profile"
+                              width={112}
+                              height={112}
+                              unoptimized
+                              className="profile-img"
+                            />
+
+                            <div className="image-overlay">
+                              <label className="profile-edit-btn">
+                                <input
+                                  type="file"
+                                  hidden
+                                  accept="image/*"
+                                  onChange={handleProfileChange}
+                                />
+                                <i className="material-symbols-outlined">
+                                  photo_camera
+                                </i>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                       <div className="d-flex mb-5 gap-3">
                         <Formik
                           innerRef={formikRef}

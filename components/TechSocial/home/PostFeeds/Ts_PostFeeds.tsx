@@ -31,24 +31,26 @@ interface Ts_PostProps {
   userName: string;
   userAvt: string;
   created_at: number;
+  is_like: boolean;
   total_view: number;
   total_like: number;
   total_comment: number;
   total_share: number;
   ai_search_views: number;
+  isFollowing: boolean;
 }
 
 const Ts_PostFeeds = ({ clss = "", reaction = "" }) => {
-  // const [allPosts, setAllPosts] = useState<Ts_PostProps[]>([]);
-  const [displayedPosts, setDisplayedPosts] = useState<Ts_PostProps[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [postsPerRender, setPostsPerRender] = useState(20);
-  const pageIndex = useRef(0);
   const dispatch = useAppDispatch();
   const { posts: allPosts } = useAppSelector((state) => state.post);
 
-  // 🧠 Common mapper
+  // const [displayedPosts, setDisplayedPosts] = useState<Ts_PostProps[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const pageIndex = useRef(0);
+  const loadingRef = useRef(false);
+
   const mapPost = (post: PostItem): Ts_PostProps => {
     const gallery: PostGalleryItem[] = post.postGallary || [];
     const isPdf = (g: PostGalleryItem) =>
@@ -71,118 +73,93 @@ const Ts_PostFeeds = ({ clss = "", reaction = "" }) => {
       userName: post.user.username,
       userAvt: post.user.picture || "",
       created_at: Number(post.created_at) || 0,
+      is_like: post.is_like || false,
       total_view: post.total_view || 0,
       total_like: post.total_like || 0,
       total_comment: post.total_comment || 0,
       total_share: post.total_share || 0,
       ai_search_views: post.ai_search_views || 0,
+      isFollowing:post.user.isFollowing || false,
     };
   };
 
-  // 🚀 Fetch posts dynamically
-  const fetchAllPosts = useCallback(async () => {
-    try {
+  const fetchAllPosts = useCallback(
+    async (page = 1) => {
+      if (loadingRef.current || !hasMore) return;
+
+      loadingRef.current = true;
       setLoading(true);
 
-      // 1️⃣ Fetch first page to get meta info
-      const firstRes = await axiosCall<ApiResponse>({
-        ENDPOINT: "posts/search-post?expand=user&page=1",
-        METHOD: "GET",
-      });
-
-      const firstItems = firstRes?.data?.data?.post?.items ?? [];
-      const meta = firstRes?.data?.data?.post?._meta;
-      const totalPages = meta?.pageCount ?? 1;
-      const perPage = meta?.perPage ?? 20;
-
-      setPostsPerRender(perPage); // dynamic per-page
-
-      // 2️⃣ Fetch remaining pages in parallel
-      const otherPageRequests = Array.from({ length: totalPages - 1 }, (_, i) =>
-        axiosCall<ApiResponse>({
-          ENDPOINT: `posts/search-post?expand=user&page=${i + 2}`,
+      try {
+        const res = await axiosCall<ApiResponse>({
+          ENDPOINT: `posts/search-post?expand=user&is_recent=1&page=${page}`,
           METHOD: "GET",
-        }).catch(() => null)
-      );
+        });
 
-      const responses = await Promise.all(otherPageRequests);
+        const items = res?.data?.data?.post?.items ?? [];
+        const meta = res?.data?.data?.post?._meta;
 
-      const allFetchedPosts: PostItem[] = [...firstItems];
-      responses.forEach((res) => {
-        if (res && res.data?.data?.post?.items?.length) {
-          allFetchedPosts.push(...res.data.data.post.items);
+        const mappedPosts = items.map(mapPost);
+
+        dispatch(setPosts(mappedPosts));
+        // setDisplayedPosts(mergedPosts);
+
+        pageIndex.current = page;
+
+        if (!meta || page >= meta.pageCount) {
+          setHasMore(false);
         }
-      });
+      } catch (err) {
+        toast.error("Failed to fetch posts");
+      } finally {
+        loadingRef.current = false;
+        setLoading(false);
+      }
+    },
+    [dispatch, hasMore],
+  );
 
-      // 3️⃣ Map + deduplicate + sort
-      const mappedPosts = allFetchedPosts.map(mapPost);
-
-      const uniquePosts = Array.from(
-        new Map(mappedPosts.map((p) => [p.postId, p])).values()
-      );
-
-      uniquePosts.sort((a, b) => b.created_at - a.created_at);
-
-      // 4️⃣ Store + display
-      // setAllPosts(uniquePosts);
-      // setDisplayedPosts(uniquePosts.slice(0, perPage));
-      dispatch(setPosts(uniquePosts));
-      // setAllPosts(uniquePosts);
-      setDisplayedPosts(uniquePosts.slice(0, perPage));
-
-      pageIndex.current = 1;
-      setHasMore(uniquePosts.length > perPage);
-    } catch (err) {
-      toast.error(`Failed to fetch posts: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  }, [dispatch]);
-
-  // 📜 Infinite scroll logic
   const loadMorePosts = useCallback(() => {
-    const nextPosts = allPosts.slice(
-      pageIndex.current * postsPerRender,
-      (pageIndex.current + 1) * postsPerRender
-    );
-
-    setDisplayedPosts((prev) => [...prev, ...nextPosts]);
-    pageIndex.current += 1;
-    if (pageIndex.current * postsPerRender >= allPosts.length) {
-      setHasMore(false);
+    if (!loadingRef.current && hasMore) {
+      fetchAllPosts(pageIndex.current + 1);
     }
-  }, [allPosts, postsPerRender]);
+  }, [fetchAllPosts, hasMore]);
 
-  // Scroll listener
   useEffect(() => {
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
           document.body.offsetHeight - 300 &&
         hasMore &&
-        !loading
+        !loadingRef.current
       ) {
         loadMorePosts();
       }
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [hasMore, loading, loadMorePosts]);
+  }, [hasMore, loadMorePosts]);
 
-  // Initial fetch
   useEffect(() => {
-    fetchAllPosts();
-  }, [fetchAllPosts]);
+    pageIndex.current = 0;
+    setHasMore(true);
+    dispatch(setPosts([]));
+    // setDisplayedPosts([]);
+    fetchAllPosts(1);
+  }, [fetchAllPosts, dispatch]);
 
   return (
     <div className="post-item d-flex flex-column gap-5 gap-md-7" id="news-feed">
-      {displayedPosts.map((post) => (
+      {allPosts.map((post) => (
         <div key={post.postId} className={`post-single-box ${clss}`}>
           <Ts_Post post={post} />
           <Ts_PostReaction post={post} isVideoPost={post.isVideoPost} />
         </div>
       ))}
+
       {loading && <DarkLoader />}
+
       {!hasMore && !loading && (
         <div className="text-center my-3 text-muted">No more posts</div>
       )}

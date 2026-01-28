@@ -2,13 +2,9 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Ts_PostAction from "./Ts_PostAction";
-import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/Redux/hooks";
-import { setSelectedPost } from "@/Redux/Reducers/PostFeeds/PostSlice";
 
 interface Ts_PostProps {
   postId: number;
-  userId: number;
   postText?: string;
   hashTags?: string[];
   postImgs: string[];
@@ -17,30 +13,19 @@ interface Ts_PostProps {
   name: string;
   userName: string;
   userAvt: string;
-  created_at: number;
-  is_like: boolean;
-  total_view: number;
-  total_like: number;
-  total_comment: number;
-  total_share: number;
-  ai_search_views: number;
-  isFollowing: boolean;
 }
 
 const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
   const {
     postId,
-    userId,
     postText,
     userAvt,
     name,
     userName,
-    created_at,
     hashTags,
     postImgs = [],
     postVideos = [],
     postPdfs = [],
-    isFollowing,
   } = post;
 
   // ✅ Image carousel state
@@ -58,52 +43,13 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
   const urlsInText = postText?.match(urlRegex) || [];
   const mainText = postText?.replace(urlRegex, "").trim() || "";
 
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-
-  const firstLetter = name?.charAt(0).toUpperCase() || "?";
-
-  const [isImageOpen, setIsImageOpen] = useState(false);
-  const [activeImage, setActiveImage] = useState<string | null>(null);
-
-  const openImageViewer = (e: React.MouseEvent, img: string) => {
-    e.stopPropagation(); // 🚫 stop post routing
-    setActiveImage(img);
-    setIsImageOpen(true);
-  };
-
-  const openPost = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    dispatch(setSelectedPost(post));
-    router.push(`/post/${post.postId}`);
-  };
-
-  const openUserProfile = (e: React.MouseEvent, userId: number) => {
-    e.stopPropagation(); // 🚨 prevents post open
-    router.push(`/profile/${userId}/post`);
-  };
-
-  const timeAgo = (timestamp: number) => {
-    const seconds = Math.floor(Date.now() / 1000 - timestamp);
-
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
-
-    return `${Math.floor(seconds / 86400)}d`;
-  };
-
   return (
-    <div className="top-area" onClick={openPost} style={{ cursor: "pointer" }}>
+    <div className="top-area">
       {/* Profile Header */}
       <div className="profile-area d-center justify-content-between">
-        <div
-          className="avatar-item d-flex gap-3 align-items-center"
-          onClick={(e) => openUserProfile(e, post.userId)}
-          style={{ cursor: "pointer" }}
-        >
+        <div className="avatar-item d-flex gap-3 align-items-center">
           <div className="avatar position-relative">
-            {/* <div
+            <div
               style={{
                 width: 50,
                 height: 50,
@@ -120,56 +66,17 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 priority
               />
-            </div> */}
-            <div
-              style={{
-                width: 50,
-                height: 50,
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: "1px solid #f05a28",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                // backgroundColor: userAvt ? "transparent" : "#f05a28",
-                color: "#fff",
-                // fontSize: 20,
-                fontWeight: 600,
-                textTransform: "uppercase",
-              }}
-            >
-              {userAvt ? (
-                <Image
-                  src={userAvt}
-                  alt={name}
-                  width={50}
-                  height={50}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  priority
-                />
-              ) : (
-                <span>{firstLetter}</span>
-              )}
             </div>
           </div>
           <div className="info-area">
-            <h6 className="m-0 d-flex align-items-baseline gap-2">
-              {/* <Link href="/public-profile/post">{name}</Link> */}
-              <span className="fw-bold">{name}</span>
-              <span className="small">· {timeAgo(created_at)}</span>
+            <h6 className="m-0">
+              <Link href="/public-profile/post">{name}</Link>
             </h6>
             <span className="mdtxt status">@{userName}</span>
           </div>
         </div>
-        <div
-          className="btn-group cus-dropdown"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Ts_PostAction
-            postUserId={post.userId}
-            postId={post.postId}
-            isFollowing={post.isFollowing}
-          />
+        <div className="btn-group cus-dropdown">
+          <Ts_PostAction />
         </div>
       </div>
 
@@ -181,13 +88,10 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
               {showFullText
                 ? mainText
                 : mainText.slice(0, 100) + (mainText.length > 100 ? "..." : "")}
-              {mainText.length > 100 && (
+              {mainText.length > 180 && (
                 <button
                   className="see-more-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowFullText((prev) => !prev);
-                  }}
+                  onClick={() => setShowFullText((prev) => !prev)}
                 >
                   {showFullText ? "less" : "more"}
                 </button>
@@ -208,7 +112,6 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
               color: "inherit",
               border: "1px solid #f05a28",
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             <p className="small mb-1">
               {(() => {
@@ -240,10 +143,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
           className={`post-media-container ${
             postImgs.length > 1 ? "clickable" : ""
           }`}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleImageClick();
-          }}
+          onClick={handleImageClick}
         >
           <Image
             src={postImgs[currentImgIndex] || "/images/default-post.png"}
@@ -251,7 +151,6 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
             width={600}
             height={400}
             style={{ objectFit: "contain", width: "100%", height: "auto" }}
-            onClick={(e) => openImageViewer(e, postImgs[currentImgIndex])}
           />
           {postImgs.length > 1 && (
             <div className="carousel-indicator">
@@ -282,29 +181,6 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
               </Link>
             </div>
           ))}
-        </div>
-      )}
-
-      {isImageOpen && activeImage && (
-        <div
-          className="image-viewer-overlay"
-          onClick={() => setIsImageOpen(false)}
-        >
-          <div
-            className="image-viewer-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={activeImage}
-              alt="Fullscreen image"
-              fill
-              style={{ objectFit: "contain" }}
-            />
-
-            <button className="close-btn" onClick={() => setIsImageOpen(false)}>
-              ✕
-            </button>
-          </div>
         </div>
       )}
     </div>

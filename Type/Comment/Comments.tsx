@@ -20,6 +20,7 @@ interface CommentItem {
   level: number;
   parent_id: number;
   filenameUrl: string | null;
+  isLike: boolean;
   user?: CommentUser;
 }
 

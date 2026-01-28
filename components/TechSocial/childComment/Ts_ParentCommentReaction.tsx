@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { setParentCommentCache } from "@/Utils/commentCache";
 import { useAppSelector } from "@/Redux/hooks";
 
-interface Ts_CommentReactionProps {
+interface Ts_ParentCommentReactionProps {
   comment: CommentItem;
   commentId: number;
   postId: number;
@@ -16,15 +16,15 @@ interface Ts_CommentReactionProps {
   onLikeToggle: (commentId: number) => void;
 }
 
-const Ts_CommentReaction = ({
+const Ts_ParentCommentReaction = ({
   comment,
   commentId,
   postId,
   replyCount,
   onDelete,
-  onReport,
   onLikeToggle,
-}: Ts_CommentReactionProps) => {
+  onReport,
+}: Ts_ParentCommentReactionProps) => {
   const router = useRouter();
   const currentUser = useAppSelector((state) => state.user.user);
   const isOwner = comment.user?.id === currentUser?.id;
@@ -59,10 +59,10 @@ const Ts_CommentReaction = ({
         <div className="d-center flex-wrap">
           <button
             className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
-            onClick={() => {
-              setParentCommentCache(comment);
-              router.push(`/post/${postId}/comment/${commentId}`);
-            }}
+            // onClick={() => {
+            //   setParentCommentCache(comment);
+            //   router.push(`/post/${postId}/comment/${commentId}`);
+            // }}
           >
             <i
               className="material-symbols-outlined mat-icon"
@@ -79,7 +79,7 @@ const Ts_CommentReaction = ({
         <div className="d-center flex-wrap">
           <button
             className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
-            onClick={() => onLikeToggle(comment.id)}
+            onClick={() => onLikeToggle(commentId)}
           >
             <i
               className="material-symbols-outlined mat-icon"
@@ -179,7 +179,7 @@ const Ts_CommentReaction = ({
           <div className="d-center flex-wrap">
             <button
               className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
-              onClick={() => onReport(comment.id)}
+              onClick={() => onReport(commentId)}
             >
               <i
                 className="material-symbols-outlined mat-icon"
@@ -207,4 +207,4 @@ const Ts_CommentReaction = ({
   );
 };
 
-export default Ts_CommentReaction;
+export default Ts_ParentCommentReaction;
