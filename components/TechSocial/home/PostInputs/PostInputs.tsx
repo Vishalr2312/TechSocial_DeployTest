@@ -6,7 +6,8 @@ import ts_profile_avatar from "/public/images/add-post-avatar.png";
 import React, { useRef, useState } from "react";
 import Ts_Location_Modal from "./Modal/Ts_Location_Modal";
 import { useAppSelector } from "@/Redux/hooks";
-import axiosCall from "@/Utils/APIcall";
+import DarkLoader from "../../Loader/DarkLoader";
+import axiosCall from "@/Utils/TsAPIcall";
 
 interface CreatePostResponse {
   status: number;
@@ -16,22 +17,103 @@ interface CreatePostResponse {
   };
 }
 
+interface UploadResponse {
+  status: number;
+  message: string;
+  data: {
+    files: {
+      file: string;
+      fileUrl: string;
+      isProhabited: boolean;
+      moderationReferenceId: string;
+    }[];
+  };
+}
+
 const PostInputs = () => {
   const currentUser = useAppSelector((state) => state.user.user);
   const [text, setText] = useState("");
-  const [images, setimages] = useState<File[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [videos, setVideos] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
   const [gifs, setGifs] = useState<File[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
     null,
   );
+  const [isPosting, setIsPosting] = useState(false);
 
-  const MEDIA_TYPE = {
-    IMAGE: "1",
-    VIDEO: "2",
-    PDF: "7",
-    // GIF: "4",
+  const convertImageToPng = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        img.src = reader.result as string;
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject("Canvas context error");
+
+        ctx.drawImage(img, 0, 0);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject("PNG conversion failed");
+
+            const pngFile = new File(
+              [blob],
+              file.name.replace(/\.[^/.]+$/, ".png"),
+              { type: "image/png" },
+            );
+
+            resolve(pngFile);
+          },
+          "image/png",
+          1.0,
+        );
+      };
+
+      img.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const generateVideoThumbnail = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      const canvas = document.createElement("canvas");
+
+      video.src = URL.createObjectURL(file);
+      video.crossOrigin = "anonymous";
+      video.muted = true;
+      video.onloadedmetadata = () => {
+        video.currentTime = Math.min(0.1, video.duration || 0.1);
+      };
+
+      video.onloadeddata = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject("Canvas error");
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((blob) => {
+          if (!blob) return reject("Thumbnail failed");
+
+          resolve(new File([blob], "video_thumb.png", { type: "image/png" }));
+        }, "image/png");
+      };
+
+      video.onerror = reject;
+    });
   };
 
   const createPost = (title: string) => {
@@ -48,6 +130,33 @@ const PostInputs = () => {
         gallary: [], // MUST be empty array
         post_content_type: "1", // PostContentType.text
         is_comment_enable: 1,
+      },
+    });
+  };
+
+  const createImagePost = (title: string, gallary: any[]) => {
+    return axiosCall<CreatePostResponse>({
+      ENDPOINT: "posts",
+      METHOD: "POST",
+      PAYLOAD: {
+        origin_post_id: null,
+        type: "1",
+        title: title.trim(),
+        hashtag: "",
+        mentionUser: "",
+        gallary,
+        post_content_type: "2",
+        competition_id: null,
+        content_type_reference_id: null,
+        club_id: null,
+        audio_id: null,
+        audio_start_time: null,
+        audio_end_time: null,
+        is_add_to_post: 0,
+        is_comment_enable: 1,
+        latitude: "",
+        longitude: "",
+        address: "",
       },
     });
   };
@@ -72,7 +181,15 @@ const PostInputs = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const selectedFiles = Array.from(e.target.files);
+
+    const imageFiles = selectedFiles.filter((f) => f.type.startsWith("image/"));
+    const videoFiles = selectedFiles.filter((f) => f.type.startsWith("video/"));
+
     // ❌ Prevent mixing file types
+    if (imageFiles.length && videoFiles.length) {
+      alert("You cannot mix images and videos in one post.");
+      return;
+    }
     if (documents.length > 0) {
       alert("You cannot upload images/videos when a PDF/document is selected.");
       e.target.value = "";
@@ -89,12 +206,25 @@ const PostInputs = () => {
       return;
     }
 
-    setimages((prev) => [...prev, ...selectedFiles]);
+    if (imageFiles.length > 0) {
+      setImages((prev) => [...prev, ...imageFiles].slice(0, 4));
+    }
+
+    if (videoFiles.length > 0) {
+      setVideos(videoFiles.slice(0, 1)); // 🚨 only ONE video allowed
+    }
+
+    // setImages((prev) => [...prev, ...selectedFiles]);
     e.target.value = "";
   };
 
   const handleRemoveFile = (index: number) => {
-    setimages((prev) => prev.filter((_, i) => i !== index));
+    if (images.length > 0) {
+      setImages((prev) => prev.filter((_, i) => i !== index));
+    }
+    if (videos.length > 0) {
+      setVideos([]);
+    }
   };
 
   // Pdf/Document
@@ -157,8 +287,125 @@ const PostInputs = () => {
     setGifs((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const uploadImages = async (files: File[]) => {
+    const formData = new FormData();
+
+    formData.append("type", "7");
+
+    // 🔥 convert every image to PNG
+    const pngFiles = await Promise.all(
+      files.map((file) => convertImageToPng(file)),
+    );
+
+    pngFiles.forEach((file) => {
+      formData.append("mediaFile", file);
+    });
+
+    // files.forEach((file) => {
+    //   formData.append("mediaFile", file);
+    // });
+
+    return axiosCall<UploadResponse>({
+      ENDPOINT: "file-uploads/upload-file",
+      METHOD: "POST",
+      PAYLOAD: formData,
+      CONFIG: true, // multipart/form-data
+    });
+  };
+
+  const uploadDocuments = async (files: File[]) => {
+    const formData = new FormData();
+
+    formData.append("type", "7"); // PUBLIC
+
+    files.forEach((file) => {
+      formData.append("mediaFile", file);
+    });
+
+    return axiosCall<UploadResponse>({
+      ENDPOINT: "file-uploads/upload-file",
+      METHOD: "POST",
+      PAYLOAD: formData,
+      CONFIG: true,
+    });
+  };
+
+  const uploadVideoWithThumbnail = async (video: File) => {
+    // 1️⃣ Generate thumbnail
+    const thumbFile = await generateVideoThumbnail(video);
+
+    // 2️⃣ Upload thumbnail
+    const thumbForm = new FormData();
+    thumbForm.append("type", "7");
+    thumbForm.append("mediaFile", thumbFile);
+
+    const thumbRes = await axiosCall<UploadResponse>({
+      ENDPOINT: "file-uploads/upload-file",
+      METHOD: "POST",
+      PAYLOAD: thumbForm,
+      CONFIG: true,
+    });
+
+    const videoThumbName = thumbRes.data.data.files[0].file;
+
+    // 3️⃣ Upload video
+    const videoForm = new FormData();
+    videoForm.append("type", "7");
+    videoForm.append("mediaFile", video);
+
+    const videoRes = await axiosCall<UploadResponse>({
+      ENDPOINT: "file-uploads/upload-file",
+      METHOD: "POST",
+      PAYLOAD: videoForm,
+      CONFIG: true,
+    });
+
+    const videoFileName = videoRes.data.data.files[0].file;
+
+    return { videoFileName, videoThumbName };
+  };
+
+  const buildGalleryFromUpload = (files: UploadResponse["data"]["files"]) => {
+    return files.map((file, index) => ({
+      filename: file.file, // 🔥 NOT fileUrl
+      video_thumb: "",
+      type: "1",
+      media_type: "1",
+      is_default: index === 0 ? "1" : "0",
+      height: "0",
+      width: "0",
+      audio_time: "0",
+    }));
+  };
+
+  const buildPdfGallery = (files: UploadResponse["data"]["files"]) => {
+    return files.map((file, index) => ({
+      filename: file.file,
+      video_thumb: "",
+      type: "1",
+      media_type: "1",
+      is_default: index === 0 ? "1" : "0",
+      height: "0",
+      width: "0",
+      audio_time: "0",
+    }));
+  };
+
+  const buildVideoGallery = (videoFile: string, videoThumb: string) => [
+    {
+      filename: videoFile,
+      video_thumb: videoThumb,
+      type: "1",
+      media_type: "2", // 🚨 VIDEO
+      is_default: "1",
+      height: "0",
+      width: "0",
+      audio_time: "0",
+    },
+  ];
+
   const handlePost = async () => {
-    if (!text.trim()) return;
+    // if (!text.trim()) return;
     // console.log("User Post:", text);
     // if (location) {
     //   console.log("User Location:", location.lat, location.lon);
@@ -176,279 +423,333 @@ const PostInputs = () => {
     // setimages([]);
     // setDocuments([]);
     // setGifs([]);
+    if (isPosting) return;
     try {
-      const res = await createPost(text);
+      setIsPosting(true);
+      // ✅ IMAGE / VIDEO POST
+      if (images.length > 0) {
+        const uploadRes = await uploadImages(images);
 
-      if (res.data.data.post_id) {
-        console.log("Post created:", res.data.data.post_id);
-        setText("");
-        window.location.pathname === "/";
+        const gallery = buildGalleryFromUpload(uploadRes.data.data.files);
+
+        await createImagePost(text, gallery);
+      } else if (videos.length > 0) {
+        const { videoFileName, videoThumbName } =
+          await uploadVideoWithThumbnail(videos[0]);
+
+        const gallery = buildVideoGallery(videoFileName, videoThumbName);
+
+        await createImagePost(text, gallery); // same endpoint
       }
 
-      setimages([]);
+      // ✅ PDF POST (you’ll implement uploadDocuments later)
+      else if (documents.length > 0) {
+        const uploadRes = await uploadDocuments(documents);
+
+        const gallery = buildPdfGallery(uploadRes.data.data.files);
+
+        await createImagePost(text, gallery);
+      }
+
+      // ✅ GIF POST
+      else if (gifs.length > 0) {
+        alert("GIF posting coming next step");
+        return;
+      }
+
+      // ✅ TEXT POST
+      else {
+        await createPost(text);
+      }
+
+      // ✅ reset UI
+      setText("");
+      setImages([]);
       setDocuments([]);
       setGifs([]);
     } catch (err) {
       console.error(err);
       alert("Failed to post");
+    } finally {
+      setIsPosting(false);
     }
   };
   return (
-    <div className="share-post d-flex gap-3 gap-sm-5 p-3 p-sm-5">
-      <div className="profile-box">
-        <Link href="#">
-          <div
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: "50%",
-              overflow: "hidden",
-              border: "1px solid #f05a28",
-            }}
-          >
-            <Image
-              src={currentUser?.picture || ts_profile_avatar}
-              width={50}
-              height={50}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              alt="icon"
+    <>
+      {isPosting && <DarkLoader />}
+      <div className="share-post d-flex gap-3 gap-sm-5 p-3 p-sm-5">
+        <div className="profile-box">
+          <Link href="#">
+            <div
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: "1px solid #f05a28",
+              }}
+            >
+              <Image
+                src={currentUser?.picture || ts_profile_avatar}
+                width={50}
+                height={50}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                alt="icon"
+              />
+            </div>
+          </Link>
+        </div>
+        <form action="#" className="w-100 position-relative">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="text-white border-0"
+            style={{ resize: "none" }}
+            cols={10}
+            rows={1}
+            placeholder="Write something to Lerio.."
+          ></textarea>
+
+          {/* Image/Video */}
+          <div className="file-upload">
+            <input
+              type="file"
+              multiple
+              accept=".png,.jpg,.jpeg,.webp,video/*"
+              ref={imageInputRef}
+              onChange={handleFileChange}
             />
+            {images.length > 0 && (
+              <ul className="mt-2 text-white text-sm space-y-1 w-full">
+                {images.map((file, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center w-full"
+                  >
+                    <span className="truncate">
+                      {file.name} ({Math.round(file.size / 1024)} KB)
+                    </span>
+                    <button
+                      onClick={() => handleRemoveFile(index)}
+                      className="ml-4 text-red-400 hover:text-red-500"
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-        </Link>
-      </div>
-      <form action="#" className="w-100 position-relative">
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="text-white border-0"
-          style={{ resize: "none" }}
-          cols={10}
-          rows={1}
-          placeholder="Write something to Lerio.."
-        ></textarea>
 
-        {/* Image/Video */}
-        <div className="file-upload">
-          <input
-            type="file"
-            multiple
-            accept=".png,.jpg,.jpeg,.webp,video/*"
-            ref={imageInputRef}
-            onChange={handleFileChange}
-          />
-          {images.length > 0 && (
-            <ul className="mt-2 text-white text-sm space-y-1 w-full">
-              {images.map((file, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between items-center w-full"
-                >
-                  <span className="truncate">
-                    {file.name} ({Math.round(file.size / 1024)} KB)
-                  </span>
-                  <button
-                    onClick={() => handleRemoveFile(index)}
-                    className="ml-4 text-red-400 hover:text-red-500"
+          {/* Pdf/Document */}
+          <div className="file-upload">
+            <input
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.txt"
+              ref={documentInputRef}
+              onChange={handleDocumentChange}
+            />
+            {documents.length > 0 && (
+              <ul className="mt-2 text-white text-sm space-y-1 w-full">
+                {documents.map((file, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center w-full"
                   >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                    <span className="truncate">
+                      📄 {file.name} ({Math.round(file.size / 1024)} KB)
+                    </span>
+                    <button
+                      onClick={() => handleRemoveDocument(index)}
+                      className="ml-4 text-red-400 hover:text-red-500"
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        {/* Pdf/Document */}
-        <div className="file-upload">
-          <input
-            type="file"
-            multiple
-            accept=".pdf,.doc,.docx,.txt"
-            ref={documentInputRef}
-            onChange={handleDocumentChange}
-          />
-          {documents.length > 0 && (
-            <ul className="mt-2 text-white text-sm space-y-1 w-full">
-              {documents.map((file, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between items-center w-full"
-                >
-                  <span className="truncate">
-                    📄 {file.name} ({Math.round(file.size / 1024)} KB)
-                  </span>
-                  <button
-                    onClick={() => handleRemoveDocument(index)}
-                    className="ml-4 text-red-400 hover:text-red-500"
+          {/* Gif */}
+          <div className="file-upload">
+            <input
+              type="file"
+              multiple
+              accept=".gif"
+              ref={gifInputRef}
+              onChange={handleGifChange}
+            />
+            {gifs.length > 0 && (
+              <ul className="mt-2 text-white text-sm space-y-1 w-full">
+                {gifs.map((file, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center w-full"
                   >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                    <span>🖼️ {file.name}</span>
+                    <button
+                      onClick={() => handleRemoveGif(index)}
+                      className="ml-4 text-red-400 hover:text-red-500"
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        {/* Gif */}
-        <div className="file-upload">
-          <input
-            type="file"
-            multiple
-            accept=".gif"
-            ref={gifInputRef}
-            onChange={handleGifChange}
-          />
-          {gifs.length > 0 && (
-            <ul className="mt-2 text-white text-sm space-y-1 w-full">
-              {gifs.map((file, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between items-center w-full"
-                >
-                  <span>🖼️ {file.name}</span>
-                  <button
-                    onClick={() => handleRemoveGif(index)}
-                    className="ml-4 text-red-400 hover:text-red-500"
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* <div className="abs-area position-absolute d-none d-sm-block">
+          {/* <div className="abs-area position-absolute d-none d-sm-block">
           <i className="material-symbols-outlined mat-icon xxltxt">
             sentiment_satisfied
           </i>
         </div> */}
-        <ul className="d-flex flex-wrap mt-3 gap-5 w-100">
-          <li
-            className="d-flex align-items-center"
-            // data-bs-toggle="modal"
-            // data-bs-target="#goTsPhotoMod"
-          >
-            <button
-              type="button"
-              className="btn rounded-circle p-0"
-              onClick={handleImageButton}
+          <ul className="d-flex flex-wrap mt-3 gap-5 w-100">
+            <li
+              className="d-flex align-items-center"
+              // data-bs-toggle="modal"
+              // data-bs-target="#goTsPhotoMod"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 64 64"
-                width="22"
-                height="22"
-                fill="none"
-                stroke="#f05a28"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+              <button
+                type="button"
+                className="btn rounded-circle p-0"
+                onClick={handleImageButton}
               >
-                <rect x="6" y="10" width="52" height="40" rx="6" ry="6" />
-                <path d="M12 42l10-12 10 12 8-10 12 10" />
-
-                <circle cx="20" cy="20" r="4" />
-              </svg>
-            </button>
-            {/* <span>Live</span> */}
-          </li>
-          <li
-            className="d-flex align-items-center"
-            // data-bs-toggle="modal"
-            // data-bs-target="#goTsPdfMod"
-          >
-            <button
-              type="button"
-              className="btn rounded-circle p-0"
-              onClick={handleDocumentButton}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 64 64"
-                width="22"
-                height="22"
-                fill="none"
-                stroke="#f05a28"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M12 6h24l16 16v36H12z" />
-                <path d="M36 6v16h16" />
-                <path d="M18 28h28" />
-                <path d="M18 36h28" />
-                <path d="M18 44h20" />
-              </svg>
-            </button>
-            {/* <span>Photo/Video</span> */}
-          </li>
-          <li
-            className="d-flex align-items-center"
-            // data-bs-toggle="modal"
-            // data-bs-target="#goTsGifMod"
-          >
-            <button
-              className="btn rounded-circle p-0"
-              type="button"
-              onClick={handleGifButton}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 64 64"
-                width="22"
-                height="22"
-                fill="none"
-                stroke="#f05a28"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="8" y="12" width="48" height="40" rx="6" ry="6" />
-                <text
-                  x="32"
-                  y="40"
-                  text-anchor="middle"
-                  font-family="Arial, Helvetica, sans-serif"
-                  font-weight="700"
-                  font-size="18"
-                  fill="#f05a28"
-                  stroke="none"
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 64 64"
+                  width="22"
+                  height="22"
+                  fill="none"
+                  stroke="#f05a28"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
                 >
-                  GIF
-                </text>
-              </svg>
-            </button>
-            {/* <span>Fallings/Activity</span> */}
-          </li>
-          <li
-            className="d-flex align-items-center"
-            data-bs-toggle="modal"
-            data-bs-target="#goTsPollMod"
-          >
-            <button className="btn rounded-circle p-0" type="button">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 64 64"
-                width="22"
-                height="22"
-                fill="none"
-                stroke="#f05a28"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                  <rect x="6" y="10" width="52" height="40" rx="6" ry="6" />
+                  <path d="M12 42l10-12 10 12 8-10 12 10" />
+
+                  <circle cx="20" cy="20" r="4" />
+                </svg>
+              </button>
+              {/* <span>Live</span> */}
+            </li>
+            <li
+              className="d-flex align-items-center"
+              // data-bs-toggle="modal"
+              // data-bs-target="#goTsPdfMod"
+            >
+              <button
+                type="button"
+                className="btn rounded-circle p-0"
+                onClick={handleDocumentButton}
               >
-                <circle cx="14" cy="20" r="2.5" fill="#f05a28" stroke="none" />
-                <circle cx="14" cy="32" r="2.5" fill="#f05a28" stroke="none" />
-                <circle cx="14" cy="44" r="2.5" fill="#f05a28" stroke="none" />
-                <path d="M20 20h30" />
-                <path d="M20 32h30" />
-                <path d="M20 44h30" />
-              </svg>
-            </button>
-            {/* <span>Fallings/Activity</span> */}
-          </li>
-          {/* <li
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 64 64"
+                  width="22"
+                  height="22"
+                  fill="none"
+                  stroke="#f05a28"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 6h24l16 16v36H12z" />
+                  <path d="M36 6v16h16" />
+                  <path d="M18 28h28" />
+                  <path d="M18 36h28" />
+                  <path d="M18 44h20" />
+                </svg>
+              </button>
+              {/* <span>Photo/Video</span> */}
+            </li>
+            <li
+              className="d-flex align-items-center"
+              // data-bs-toggle="modal"
+              // data-bs-target="#goTsGifMod"
+            >
+              <button
+                className="btn rounded-circle p-0"
+                type="button"
+                onClick={handleGifButton}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 64 64"
+                  width="22"
+                  height="22"
+                  fill="none"
+                  stroke="#f05a28"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="8" y="12" width="48" height="40" rx="6" ry="6" />
+                  <text
+                    x="32"
+                    y="40"
+                    text-anchor="middle"
+                    font-family="Arial, Helvetica, sans-serif"
+                    font-weight="700"
+                    font-size="18"
+                    fill="#f05a28"
+                    stroke="none"
+                  >
+                    GIF
+                  </text>
+                </svg>
+              </button>
+              {/* <span>Fallings/Activity</span> */}
+            </li>
+            <li
+              className="d-flex align-items-center"
+              data-bs-toggle="modal"
+              data-bs-target="#goTsPollMod"
+            >
+              <button className="btn rounded-circle p-0" type="button">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 64 64"
+                  width="22"
+                  height="22"
+                  fill="none"
+                  stroke="#f05a28"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle
+                    cx="14"
+                    cy="20"
+                    r="2.5"
+                    fill="#f05a28"
+                    stroke="none"
+                  />
+                  <circle
+                    cx="14"
+                    cy="32"
+                    r="2.5"
+                    fill="#f05a28"
+                    stroke="none"
+                  />
+                  <circle
+                    cx="14"
+                    cy="44"
+                    r="2.5"
+                    fill="#f05a28"
+                    stroke="none"
+                  />
+                  <path d="M20 20h30" />
+                  <path d="M20 32h30" />
+                  <path d="M20 44h30" />
+                </svg>
+              </button>
+              {/* <span>Fallings/Activity</span> */}
+            </li>
+            {/* <li
             className="d-flex align-items-center"
             data-bs-toggle="modal"
             data-bs-target="#goTsLocationMod"
@@ -475,23 +776,30 @@ const PostInputs = () => {
             </button>
             <Ts_Location_Modal />
           </li> */}
-          <li
-            className="d-flex align-items-center ms-auto"
-            // data-bs-toggle="modal"
-            // data-bs-target="#goTsLocationMod"
-          >
-            <button
-              type="button"
-              className="cmn-btn"
-              disabled={!text.trim()}
-              onClick={handlePost}
+            <li
+              className="d-flex align-items-center ms-auto"
+              // data-bs-toggle="modal"
+              // data-bs-target="#goTsLocationMod"
             >
-              Post
-            </button>
-          </li>
-        </ul>
-      </form>
-    </div>
+              <button
+                type="button"
+                className="cmn-btn"
+                disabled={
+                  !text.trim() &&
+                  images.length === 0 &&
+                  videos.length === 0 &&
+                  documents.length === 0
+                  // gifs.length === 0
+                }
+                onClick={handlePost}
+              >
+                Post
+              </button>
+            </li>
+          </ul>
+        </form>
+      </div>
+    </>
   );
 };
 
