@@ -467,6 +467,7 @@ const PostInputs = () => {
       setImages([]);
       setDocuments([]);
       setGifs([]);
+      window.location.href = "/";
     } catch (err) {
       console.error(err);
       alert("Failed to post");

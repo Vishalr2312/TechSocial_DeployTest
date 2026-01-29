@@ -2,6 +2,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Ts_PostAction from "./Ts_PostAction";
+import Ts_PdfCarousel from "../home/PostFeeds/components/Ts_PdfCarousel";
 
 interface Ts_PostProps {
   postId: number;
@@ -41,6 +42,10 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
 
     return `${Math.floor(seconds / 86400)}d`;
+  };
+
+  const openPdf = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleImageClick = () => {
@@ -185,7 +190,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
         </div>
       )}
 
-      {postPdfs.length > 0 && (
+      {/* {postPdfs.length > 0 && (
         <div className="pdf-container">
           {postPdfs.map((pdfUrl, idx) => (
             <div key={idx} className="pdf-item">
@@ -194,6 +199,13 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
                 <p>View PDF {postPdfs.length > 1 ? idx + 1 : ""}</p>
               </Link>
             </div>
+          ))}
+        </div>
+      )} */}
+      {postPdfs.length > 0 && (
+        <div className="pdf-container">
+          {postPdfs.map((pdfUrl, idx) => (
+            <Ts_PdfCarousel key={idx} pdfUrl={pdfUrl} onOpen={openPdf} />
           ))}
         </div>
       )}

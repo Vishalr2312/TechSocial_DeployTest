@@ -5,6 +5,10 @@ import Ts_PostAction from "./Ts_PostAction";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/Redux/hooks";
 import { setSelectedPost } from "@/Redux/Reducers/PostFeeds/PostSlice";
+import dynamic from "next/dynamic";
+import Ts_PdfCarousel from "./Ts_PdfCarousel";
+
+// const PdfCarousel = dynamic(() => import("./Ts_PdfCarousel"), { ssr: false });
 
 interface Ts_PostProps {
   postId: number;
@@ -70,6 +74,10 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
     e.stopPropagation(); // 🚫 stop post routing
     setActiveImage(img);
     setIsImageOpen(true);
+  };
+
+  const openPdf = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const openPost = (e: React.MouseEvent) => {
@@ -272,7 +280,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
         </div>
       )}
 
-      {postPdfs.length > 0 && (
+      {/* {postPdfs.length > 0 && (
         <div className="pdf-container">
           {postPdfs.map((pdfUrl, idx) => (
             <div key={idx} className="pdf-item">
@@ -281,6 +289,13 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
                 <p>View PDF {postPdfs.length > 1 ? idx + 1 : ""}</p>
               </Link>
             </div>
+          ))}
+        </div>
+      )} */}
+      {postPdfs.length > 0 && (
+        <div className="pdf-container">
+          {postPdfs.map((pdfUrl, idx) => (
+            <Ts_PdfCarousel key={idx} pdfUrl={pdfUrl} onOpen={openPdf} />
           ))}
         </div>
       )}
