@@ -191,7 +191,7 @@ export default function SubscriptionPage() {
   };
 
   const getTotalPrice = () => {
-    if (selectedPlan === "ad") return 100;
+    if (selectedPlan === "ad") return 7.99;
     return workChecked.reduce((total, checked, index) => {
       if (checked) return total + (workFeatures[index]?.price || 0);
       return total;

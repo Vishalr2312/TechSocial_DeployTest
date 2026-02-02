@@ -54,7 +54,37 @@ interface PostData {
 //   is_saved: number;
 //   user: User;
 // }
-interface PostItem {
+interface BasePost {
+  id: number;
+  type: number;
+  post_content_type: number;
+  content_type_reference_id: number | null;
+  unique_id: string;
+  user_id: number;
+  title: string;
+  description: string | null;
+  image: string | null;
+  total_view: number;
+  total_like: number;
+  total_comment: number;
+  total_share: number;
+  ai_search_views: number;
+  popular_point: number;
+  status: number;
+  created_at: number;
+  latitude: number | string | null;
+  longitude: number | string | null;
+  address: string | null;
+  is_like: boolean;
+  is_reported: number;
+  hashtags: string[];
+  mentionUsers: string[];
+  is_promotion: number;
+  is_saved: number;
+  share_link: string;
+}
+
+interface PostItem extends BasePost {
   id: number;
   type: number;
   post_content_type: number;
@@ -103,7 +133,29 @@ interface PostItem {
   hashtags: string[];
   mentionUsers: string[];
   user: User;
+  originPost?: OriginPost;
   // comments?: PostComment[];
+}
+
+interface OriginPost extends BasePost {
+  created_by: number;
+  updated_at: number;
+  updated_by: number;
+
+  audio_id?: number | null;
+  audio_start_time?: number | null;
+  audio_end_time?: number | null;
+
+  is_add_to_post?: number;
+  is_share_post?: number;
+  share_level?: number;
+  origin_post_id?: number | null;
+
+  is_comment_enable: number;
+  display_whose: number;
+
+  postGallary: PostGalleryItem[];
+  user: User; // ✅ THIS is originPost.user
 }
 
 interface User {

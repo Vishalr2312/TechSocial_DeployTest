@@ -1,26 +1,28 @@
+import { Ts_PostProps } from "@/components/TechSocial/home/PostFeeds/Ts_PostFeeds";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export interface Ts_PostProps {
-  postId: number;
-  userId: number;
-  postText?: string;
-  hashTags?: string[];
-  postImgs: string[];
-  postVideos?: string[];
-  postPdfs?: string[];
-  isVideoPost?: boolean;
-  name: string;
-  userName: string;
-  userAvt: string;
-  created_at: number;
-  is_like:boolean;
-  total_view: number;
-  total_like: number;
-  total_comment: number;
-  total_share: number;
-  ai_search_views: number;
-  isFollowing: boolean;
-}
+// export interface Ts_PostProps {
+//   postId: number;
+//   userId: number;
+//   type:number;
+//   postText?: string;
+//   hashTags?: string[];
+//   postImgs: string[];
+//   postVideos?: string[];
+//   postPdfs?: string[];
+//   isVideoPost?: boolean;
+//   name: string;
+//   userName: string;
+//   userAvt: string;
+//   created_at: number;
+//   is_like:boolean;
+//   total_view: number;
+//   total_like: number;
+//   total_comment: number;
+//   total_share: number;
+//   ai_search_views: number;
+//   isFollowing: boolean;
+// }
 
 interface PostState {
   posts: Ts_PostProps[];
@@ -77,7 +79,7 @@ const postSlice = createSlice({
 
       // newest first
       state.posts = Array.from(map.values()).sort(
-        (a, b) => b.created_at - a.created_at
+        (a, b) => b.created_at - a.created_at,
       );
     },
 
@@ -95,13 +97,16 @@ const postSlice = createSlice({
     clearPosts(state) {
       state.posts = [];
     },
+
+    removePost(state, action: PayloadAction<number>) {
+      state.posts = state.posts.filter(
+        (post) => post.postId !== action.payload,
+      );
+    },
   },
 });
 
-export const {
-  setPosts,
-  setSelectedPost,
-  clearSelectedPost,
-} = postSlice.actions;
+export const { setPosts, setSelectedPost, clearSelectedPost, removePost, clearPosts } =
+  postSlice.actions;
 
 export default postSlice.reducer;

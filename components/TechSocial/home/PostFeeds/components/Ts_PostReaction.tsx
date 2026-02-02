@@ -20,6 +20,7 @@ interface LikeUnlikeApiResponse {
 interface Ts_PostReactionProps {
   postId: number;
   userId: number;
+  type: number;
   postText?: string;
   hashTags?: string[];
   postImgs: string[];
@@ -221,7 +222,16 @@ const Ts_PostReaction = ({
           </div>
         )}
         <div className="d-center flex-wrap">
-          <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
+          <button
+            className="d-center gap-1 gap-sm-2 mdtxt chat-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#goTsRepostMod"
+            role="modal"
+            onClick={(e) => {
+              e.stopPropagation();
+              dispatch(setSelectedPost(post));
+            }}
+          >
             <i
               className="material-symbols-outlined mat-icon"
               style={{ fontSize: "20px" }}

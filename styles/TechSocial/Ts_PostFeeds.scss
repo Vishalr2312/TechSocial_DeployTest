@@ -129,7 +129,7 @@
   height: 100%;
 }
 
-.close-btn {
+.image-close-btn {
   position: absolute;
   top: 20px;
   right: 20px;
@@ -207,3 +207,8 @@
   color: #fff;
 }
 // PDF css ends
+// repost modal starts
+.repost-modal {
+  background-color: #000 !important;
+}
+// repost modal ends

@@ -4,12 +4,14 @@ interface Ts_PostActionProps {
   postUserId: number;
   postId: number;
   isFollowing?: boolean;
+  onDelete: (commentId: number) => void;
 }
 
 const Ts_PostAction = ({
   postUserId,
   postId,
   isFollowing = false,
+  onDelete,
 }: Ts_PostActionProps) => {
   const currentUserId = useAppSelector((state) => state.user.user?.id);
   const isMyPost = currentUserId === postUserId;
@@ -71,7 +73,13 @@ const Ts_PostAction = ({
             <li>
               <button
                 className="droplist d-flex align-items-center gap-2 text-danger"
-                // onClick={handleDelete}
+                onClick={() => {
+                  if (
+                    confirm("Are you sure you want to delete this post?")
+                  ) {
+                    onDelete(postId);
+                  }
+                }}
               >
                 <i className="material-symbols-outlined mat-icon">delete</i>
                 <span>Delete Post</span>
@@ -79,10 +87,7 @@ const Ts_PostAction = ({
             </li>
 
             <li>
-              <button
-                className="droplist d-flex align-items-center gap-2 text-danger"
-                // onClick={handleDelete}
-              >
+              <button className="droplist d-flex align-items-center gap-2 text-danger">
                 <i className="material-symbols-outlined mat-icon">share</i>
                 <span>Share Post</span>
               </button>
@@ -91,6 +96,13 @@ const Ts_PostAction = ({
         ) : (
           <>
             {/* 👥 OTHER USER POST ACTIONS */}
+            <li>
+              <button className="droplist d-flex align-items-center gap-2">
+                <i className="material-symbols-outlined mat-icon">chat</i>
+                <span>Message</span>
+              </button>
+            </li>
+
             <li>
               <button
                 className="droplist d-flex align-items-center gap-2"

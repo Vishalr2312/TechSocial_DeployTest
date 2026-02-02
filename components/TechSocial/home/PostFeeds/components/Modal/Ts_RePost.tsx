@@ -1,16 +1,16 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Ts_PostAction from "./Ts_PostAction";
+import Ts_PostAction from "../Ts_PostAction";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/Redux/hooks";
 import { setSelectedPost } from "@/Redux/Reducers/PostFeeds/PostSlice";
 import dynamic from "next/dynamic";
-import Ts_PdfCarousel from "./Ts_PdfCarousel";
+import Ts_PdfCarousel from "../Ts_PdfCarousel";
 
 // const PdfCarousel = dynamic(() => import("./Ts_PdfCarousel"), { ssr: false });
 
-interface Ts_PostProps {
+interface Ts_RePostProps {
   postId: number;
   userId: number;
   type: number;
@@ -32,12 +32,7 @@ interface Ts_PostProps {
   isFollowing: boolean;
 }
 
-interface Ts_PostComponentProps {
-  post: Ts_PostProps;
-  onDelete: (postId: number) => void;
-}
-
-const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
+const Ts_RePost = ({ post }: { post: Ts_RePostProps }) => {
   const {
     postId,
     userId,
@@ -183,7 +178,6 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
             postUserId={post.userId}
             postId={post.postId}
             isFollowing={post.isFollowing}
-            onDelete={onDelete}
           />
         </div>
       </div>
@@ -336,4 +330,4 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
   );
 };
 
-export default Ts_Post;
+export default Ts_RePost;

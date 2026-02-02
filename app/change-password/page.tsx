@@ -1,9 +1,9 @@
-import Ts_ExploreAI from "@/components/TechSocial/exploreai/Ts_ExploreAI";
+import ChangePasswordComp from "@/components/TechSocial/changePassword/ChangePasswordComp";
 
 export default function ChangePassword() {
   return (
     <>
-      {/* <Ts_ExploreAI /> */}
+      <ChangePasswordComp />
     </>
   );
 }
