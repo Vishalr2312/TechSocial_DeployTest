@@ -68,6 +68,8 @@ const Ts_RepostModal = ({ postId }: { postId: number | null }) => {
   //     });
   //   }, [currentUser]);
 
+  const handleDeletePost = async () => {};
+
   const handleRepost = async (text: string) => {
     if (!selectedPost) {
       toast.error("No post selected to repost");
@@ -381,7 +383,10 @@ const Ts_RepostModal = ({ postId }: { postId: number | null }) => {
                         {selectedPost && (
                           <>
                             <div>
-                              <Ts_RePost post={selectedPost} />
+                              <Ts_RePost
+                                post={selectedPost}
+                                onDelete={handleDeletePost}
+                              />
                               <Ts_InputBox
                                 onSubmit={handleRepost}
                                 loading={loading}
