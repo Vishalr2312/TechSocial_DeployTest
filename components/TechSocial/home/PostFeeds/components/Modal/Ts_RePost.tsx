@@ -32,7 +32,12 @@ interface Ts_RePostProps {
   isFollowing: boolean;
 }
 
-const Ts_RePost = ({ post }: { post: Ts_RePostProps }) => {
+interface Ts_RePostComponentProps {
+  post: Ts_RePostProps;
+  onDelete: (postId: number) => void;
+}
+
+const Ts_RePost = ({ post, onDelete }: Ts_RePostComponentProps) => {
   const {
     postId,
     userId,
@@ -178,6 +183,7 @@ const Ts_RePost = ({ post }: { post: Ts_RePostProps }) => {
             postUserId={post.userId}
             postId={post.postId}
             isFollowing={post.isFollowing}
+            onDelete={onDelete}
           />
         </div>
       </div>
