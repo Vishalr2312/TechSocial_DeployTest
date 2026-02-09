@@ -10,6 +10,7 @@ import { UserList } from "@/Type/SearchUsers/SearchUsers";
 import axiosCall from "@/Utils/APIcall";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
+// import DarkLoader from "../TechSocial/Loader/DarkLoader";
 
 interface ApiResponse {
   status: number;
@@ -21,6 +22,12 @@ interface ApiResponse {
   };
 }
 
+interface FollowUnfollowApiResponse {
+  status: number;
+  message: string;
+  data: [];
+}
+
 interface ContactProps {
   children: React.ReactNode;
 }
@@ -29,6 +36,7 @@ const Contact = ({ children }: ContactProps) => {
   const pathname = usePathname();
   const [users, setUsers] = useState<UserList[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  // const [pageLoading, setPageLoading] = useState<boolean>(false);
 
   // useEffect(() => {
   //   const fetchUsers = async () => {
@@ -113,6 +121,61 @@ const Contact = ({ children }: ContactProps) => {
     fetchUsers();
   }, []);
 
+  const followUserApi = (userId: number) => {
+    return axiosCall<FollowUnfollowApiResponse>({
+      ENDPOINT: "followers",
+      METHOD: "POST",
+      PAYLOAD: {
+        user_id: userId,
+      },
+    });
+  };
+
+  const unfollowUserApi = (userId: number) => {
+    return axiosCall<FollowUnfollowApiResponse>({
+      ENDPOINT: "followers/unfollow",
+      METHOD: "POST", // change if backend uses DELETE
+      PAYLOAD: {
+        user_id: userId,
+      },
+    });
+  };
+
+  const handleFollowToggle = async (userId: number, isFollowing: number) => {
+    // 1️⃣ Optimistic UI update
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === userId
+          ? { ...user, isFollowing: isFollowing ? 0 : 1 }
+          : user,
+      ),
+    );
+
+    try {
+      // setPageLoading(true);
+      if (isFollowing) {
+        await unfollowUserApi(userId);
+        toast.success("Unfollowed");
+      } else {
+        await followUserApi(userId);
+        toast.success("Followed");
+      }
+    } catch (error: any) {
+      // 2️⃣ Rollback on failure
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, isFollowing } : user,
+        ),
+      );
+
+      toast.error(
+        error?.response?.data?.message || "Failed to update follow status",
+      );
+    } finally {
+      // setPageLoading(false);
+    }
+  };
+
   return (
     <>
       {/* children props */}
@@ -151,6 +214,7 @@ const Contact = ({ children }: ContactProps) => {
             <SingleContact data={itm} />
           </div>
         ))} */}
+        {/* {pageLoading && <DarkLoader />} */}
         {loading ? (
           <div>Loading users...</div>
         ) : users.length > 0 ? (
@@ -159,7 +223,7 @@ const Contact = ({ children }: ContactProps) => {
               key={user.id}
               className="profile-area d-center position-relative align-items-center justify-content-between"
             >
-              <SingleContact data={user} />
+              <SingleContact data={user} onFollowToggle={handleFollowToggle} />
             </div>
           ))
         ) : (

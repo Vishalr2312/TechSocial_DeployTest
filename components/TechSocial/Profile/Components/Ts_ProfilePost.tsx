@@ -6,6 +6,8 @@ import Link from "next/link";
 import Ts_ProfilePostFeeds from "./Posts/Ts_ProfilePostFeeds";
 import Contact from "@/components/common/Contact";
 import SidebarFooter from "../../home/menu/Components/SidebarFooter";
+import TrendingPosts from "../../home/menu/Components/TrendingPosts";
+import { useState } from "react";
 
 interface BioItem {
   id: number;
@@ -16,6 +18,7 @@ interface BioItem {
 
 const Ts_ProfilePost = () => {
   const user = useAppSelector((state) => state.profile.user);
+  const [showTrending, setShowTrending] = useState(true);
 
   const bioData: BioItem[] = [
     user?.email
@@ -123,6 +126,36 @@ const Ts_ProfilePost = () => {
                     <h6 className="d-inline-flex">You might like</h6>
                   </div>
                 </Contact>
+              </div>
+              <div className="sidebar-area p-5">
+                {" "}
+                {showTrending ? (
+                  <TrendingPosts>
+                    <div className="mb-4 d-flex align-items-center justify-content-between">
+                      <h6 className="m-0">Popular Posts</h6>
+
+                      <button
+                        className="close-btn"
+                        onClick={() => setShowTrending(false)}
+                        aria-label="Hide popular posts"
+                      >
+                        <i className="material-symbols-outlined mat-icon">
+                          close
+                        </i>
+                      </button>
+                    </div>
+                  </TrendingPosts>
+                ) : (
+                  <button
+                    className="button w-100 d-flex align-items-center justify-content-between"
+                    onClick={() => setShowTrending(true)}
+                  >
+                    <h6 className="m-0">Popular Posts</h6>
+                    <i className="material-symbols-outlined mat-icon">
+                      keyboard_arrow_down
+                    </i>
+                  </button>
+                )}
               </div>
               <div className="p-5">
                 <SidebarFooter />

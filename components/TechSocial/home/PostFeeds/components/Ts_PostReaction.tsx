@@ -37,6 +37,7 @@ interface Ts_PostReactionProps {
   total_share: number;
   ai_search_views: number;
   isFollowing: boolean;
+  isSaved: boolean;
 }
 
 const Ts_PostReaction = ({
@@ -78,12 +79,13 @@ const Ts_PostReaction = ({
       if (res?.data?.data?.total_like !== undefined) {
         setLikeCount(res.data.data.total_like);
       }
-      toast.success(res?.data?.message);
+      // toast.success(res?.data?.message);
     } catch {
       // rollback
       setIsLiked(post.is_like);
       setLikeCount(post.total_like);
-      toast.error("Failed to update like");
+      // toast.error("Failed to update like");
+      console.error("Failed to update like");
     } finally {
       setLikeLoading(false);
     }

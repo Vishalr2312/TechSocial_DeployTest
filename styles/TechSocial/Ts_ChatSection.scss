@@ -1,0 +1,113 @@
+.message-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-actions {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* Positioning */
+.message-actions.me {
+  left: -60px;
+}
+
+.message-actions.you {
+  right: -60px;
+}
+
+/* Show on hover */
+li:hover .message-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.reply-container {
+  background-color: #16181c;
+  border-radius: 1rem;
+  padding: 6px 10px;
+  display: inline-block; /* 🔥 key line */
+  width: fit-content; /* default, but explicit is nice */
+  max-width: 85%;
+}
+
+.reply-container p {
+  font-size: 15px;
+  // white-space: nowrap;
+  // overflow: hidden;
+  // text-overflow: ellipsis;
+}
+
+.reply-me {
+  align-self: flex-end;
+}
+
+.reply-you {
+  align-self: flex-start;
+}
+
+@media (hover: none) {
+  .message-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.message {
+  position: relative;
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.sent-icon {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.starred-icon {
+  font-size: 14px;
+  // color: gold;
+  color: #ffffff;
+  margin-left: 6px;
+}
+
+/* time */
+.message-time {
+  white-space: nowrap;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+/* single icon for all states */
+.message-status {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+/* states */
+// .status-0 {
+//   opacity: 0.4; /* sending */
+// }
+
+// .status-1 {
+//   opacity: 0.8; /* sent */
+// }
+
+// .status-2 {
+//   color: #ff6b6b; /* failed */
+//   opacity: 1;
+// }

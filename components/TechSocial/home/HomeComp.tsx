@@ -3,7 +3,6 @@ import PostInputs from "./PostInputs/PostInputs";
 import HomeRight from "./menu/HomeRight";
 import Ts_PostFeeds from "./PostFeeds/Ts_PostFeeds";
 
-
 const HomeComp = () => {
   return (
     <>

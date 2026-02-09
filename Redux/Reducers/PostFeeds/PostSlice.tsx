@@ -103,10 +103,35 @@ const postSlice = createSlice({
         (post) => post.postId !== action.payload,
       );
     },
+
+    toggleFollow: (state, action) => {
+      const userId = action.payload;
+
+      state.posts = state.posts.map((post) =>
+        post.userId === userId
+          ? { ...post, isFollowing: !post.isFollowing }
+          : post,
+      );
+    },
+
+    toggleSave: (state, action) => {
+      const postId = action.payload;
+
+      state.posts = state.posts.map((post) =>
+        post.postId === postId ? { ...post, isSaved: !post.isSaved } : post,
+      );
+    },
   },
 });
 
-export const { setPosts, setSelectedPost, clearSelectedPost, removePost, clearPosts } =
-  postSlice.actions;
+export const {
+  setPosts,
+  setSelectedPost,
+  clearSelectedPost,
+  removePost,
+  clearPosts,
+  toggleFollow,
+  toggleSave,
+} = postSlice.actions;
 
 export default postSlice.reducer;

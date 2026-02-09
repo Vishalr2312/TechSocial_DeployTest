@@ -47,6 +47,7 @@ interface BasePostProps {
   total_share: number;
   ai_search_views: number;
   isFollowing: boolean;
+  isSaved: boolean;
 }
 
 export interface Ts_NormalPostProps extends BasePostProps {
@@ -59,9 +60,9 @@ export interface Ts_RepostProps extends BasePostProps {
     name: string;
     username: string;
     avatar: string;
-    comment?: string;
+    title?: string;
   };
-  originalPost: {
+  originalPost?: {
     postId: number;
     text?: string;
     imgs: string[];
@@ -223,6 +224,7 @@ const Ts_PostFeeds = ({ clss = "", reaction = "" }) => {
       total_share: post.total_share || 0,
       ai_search_views: post.ai_search_views || 0,
       isFollowing: post.user.isFollowing || false,
+      isSaved: post.is_saved || false,
     };
 
     /* 🔁 Repost */
@@ -245,7 +247,7 @@ const Ts_PostFeeds = ({ clss = "", reaction = "" }) => {
           name: post.user.name,
           username: post.user.username,
           avatar: post.user.picture || "",
-          comment: post.share_comment || "",
+          title: post.title || "",
         },
         originalPost: {
           postId: origin.id,
@@ -260,6 +262,21 @@ const Ts_PostFeeds = ({ clss = "", reaction = "" }) => {
           },
         },
       };
+    }
+
+    /* 🔁 Broken Repost - originPost is null */
+    if (post.type === 5 && !post.originPost) {
+      return {
+        ...basePost,
+        type: 5,
+        repostedBy: {
+          name: post.user.name,
+          username: post.user.username,
+          avatar: post.user.picture || "",
+          title: post.title || "",
+        },
+        originalPost: undefined, // 🚨 Mark as unavailable
+      } as Ts_RepostProps;
     }
 
     /* 🧾 Normal post */

@@ -24,18 +24,18 @@ const Ts_PublicProfilePost = () => {
 
     // user?.phone ? { id: 2, type: user.phone, icon: "call", class: "" } : null,
 
-    // user?.website
-    //   ? { id: 3, type: user.website, icon: "language", class: "link" }
-    //   : null,
+    user?.website
+      ? { id: 3, type: user.website, icon: "language", class: "link" }
+      : null,
 
-    // user?.industry
-    //   ? {
-    //       id: 4,
-    //       type: user.industry,
-    //       icon: "location_city",
-    //       class: "",
-    //     }
-    //   : null,
+    user?.industry
+      ? {
+          id: 4,
+          type: user.industry,
+          icon: "location_city",
+          class: "",
+        }
+      : null,
 
     user?.city || user?.country
       ? {

@@ -47,13 +47,13 @@ const NavBar = ({ clss = "container" }: { clss: string }) => {
   const settingsRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(messageRef, () =>
-    setActive((prev) => (prev === "message" ? "" : prev))
+    setActive((prev) => (prev === "message" ? "" : prev)),
   );
   useClickOutside(notificationRef, () =>
-    setActive((prev) => (prev === "notification" ? "" : prev))
+    setActive((prev) => (prev === "notification" ? "" : prev)),
   );
   useClickOutside(settingsRef, () =>
-    setActive((prev) => (prev === "settings" ? "" : prev))
+    setActive((prev) => (prev === "settings" ? "" : prev)),
   );
 
   useEffect(() => {
@@ -175,15 +175,14 @@ const NavBar = ({ clss = "container" }: { clss: string }) => {
               </li>
             </ul> */}
             <div className="right-area position-relative d-flex gap-3 gap-xxl-6 align-items-center">
-              <div
+              {/* <div
                 ref={messageRef}
                 className={`single-item d-none d-lg-block messages-area ${
                   active === "message" ? "active" : ""
                 }`}
               >
-                {/* Message */}
                 <Message activeHandler={activeHandler} />
-              </div>
+              </div> */}
               <div
                 ref={notificationRef}
                 className={`single-item d-none d-lg-block messages-area notification-area ${

@@ -3,6 +3,7 @@ import UserSlice from './Reducers/UserSlice';
 import ProfileSlice from './Reducers/Profile/ProfileSlice';
 import PublicProfileSlice from './Reducers/Profile/PublicProfileSlice';
 import PostSlice from './Reducers/PostFeeds/PostSlice';
+import ChatSlice from './Reducers/ChatSection/chatSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +14,8 @@ export const store = configureStore({
     publicProfile: PublicProfileSlice,
     // Posts
     post: PostSlice,
+    // Chats
+    chat: ChatSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

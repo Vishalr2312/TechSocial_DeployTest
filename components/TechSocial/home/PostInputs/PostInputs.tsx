@@ -667,7 +667,7 @@ const PostInputs = () => {
               </button>
               {/* <span>Photo/Video</span> */}
             </li>
-            <li
+            {/* <li
               className="d-flex align-items-center"
               // data-bs-toggle="modal"
               // data-bs-target="#goTsGifMod"
@@ -703,8 +703,8 @@ const PostInputs = () => {
                   </text>
                 </svg>
               </button>
-              {/* <span>Fallings/Activity</span> */}
-            </li>
+              {/* <span>Fallings/Activity</span>
+            </li> */}
             <li
               className="d-flex align-items-center"
               data-bs-toggle="modal"

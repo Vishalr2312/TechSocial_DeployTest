@@ -25,7 +25,8 @@ export const friendLeftMenu = [
 export const homeLeftMenu = [
   ["home", "Home", "/"],
   ["psychology", "Explore AI", "/explore-ai"],
-  ["chat", "Chats", "/chats"],
+  // ["chat", "Chats", "/chats"],
+  ["chat", "Chats", "/profile/chat"],
   ["groups", "Followers", "/followers"],
   ["how_to_reg", "Following", "/following"],
   //   ["article", "Pages", "/pages"],

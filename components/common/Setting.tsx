@@ -103,12 +103,12 @@ const Setting = ({ activeHandler }: { activeHandler: (a: string) => void }) => {
           </Link>
         </div>
         <ul>
-          <li>
+          {/* <li>
             <Link href="/profile/edit" className="mdtxt">
               <i className="material-symbols-outlined mat-icon"> settings </i>
               Settings & Privacy
             </Link>
-          </li>
+          </li> */}
           <li>
             <Link href="/change-password" className="mdtxt">
               <i className="material-symbols-outlined mat-icon"> key </i>

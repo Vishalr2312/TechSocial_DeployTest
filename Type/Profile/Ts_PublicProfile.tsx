@@ -14,6 +14,8 @@ export interface UserPublicProfile {
   is_verified: number;
   country_code: string | null;
   phone: string | null;
+  website: string | null;
+  industry: string | null;
   country: string | null;
   city: string | null;
   sex: string | null;

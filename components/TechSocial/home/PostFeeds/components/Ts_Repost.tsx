@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Ts_PostAction from "./Ts_PostAction";
@@ -9,6 +9,15 @@ import dynamic from "next/dynamic";
 import Ts_PdfCarousel from "./Ts_PdfCarousel";
 
 // const PdfCarousel = dynamic(() => import("./Ts_PdfCarousel"), { ssr: false });
+
+interface LinkPreview {
+  title: string | null;
+  description: string | null;
+  images: string[];
+  siteName: string | null;
+  url: string;
+  favicons: string[];
+}
 
 interface Ts_RepostProps {
   postId: number;
@@ -30,16 +39,17 @@ interface Ts_RepostProps {
   total_share: number;
   ai_search_views: number;
   isFollowing: boolean;
+  isSaved: boolean;
   repostedBy?: {
     name: string;
     username: string;
     avatar: string;
-    comment?: string;
+    title?: string;
   };
-  originalPost: {
+  originalPost?: {
     postId: number;
     text?: string;
-    imgs: string[];
+    imgs?: string[];
     videos?: string[];
     pdfs?: string[];
     user: {
@@ -77,16 +87,40 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
   const handleImageClick = () => {
-    if (postImgs.length > 1) {
-      setCurrentImgIndex((prev) => (prev + 1) % postImgs.length);
+    const imageCount = originalPost?.imgs?.length ?? 0;
+    if (imageCount > 1) {
+      setCurrentImgIndex((prev) => (prev + 1) % imageCount);
     }
   };
 
   const [showFullText, setShowFullText] = useState(false);
 
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const urlsInText = originalPost?.text?.match(urlRegex) || [];
-  const mainText = originalPost?.text?.replace(urlRegex, "").trim() || "";
+  // const urlRegex = /(https?:\/\/[^\s]+)/g;
+  // const urlsInText = originalPost?.text?.match(urlRegex) || [];
+  // const mainText = originalPost?.text?.replace(urlRegex, "").trim() || "";
+  const { urlsInText, mainText } = useMemo(() => {
+    const text = originalPost?.text ?? "";
+    if (!text) return { urlsInText: [], mainText: "" };
+
+    // Improved regex to avoid matching trailing punctuation
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const rawMatches = text.match(urlRegex) || [];
+
+    // Clean trailing punctuation from URLs
+    const cleanUrls = Array.from(
+      new Set(rawMatches.map((url) => url.replace(/[.,;!?)]+$/, ""))),
+    );
+    const textWithoutUrls = text.replace(urlRegex, "").trim();
+
+    return { urlsInText: cleanUrls, mainText: textWithoutUrls };
+  }, [originalPost?.text]);
+
+  const [linkPreviews, setLinkPreviews] = useState<Record<string, LinkPreview>>(
+    {},
+  );
+  const [loadingPreviews, setLoadingPreviews] = useState<
+    Record<string, boolean>
+  >({});
 
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -117,8 +151,8 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
     router.push(`/profile/${userId}/post`);
   };
 
-  const videos = originalPost.videos ?? [];
-  const pdfs = originalPost.pdfs ?? [];
+  const videos = originalPost?.videos ?? [];
+  const pdfs = originalPost?.pdfs ?? [];
 
   const timeAgo = (timestamp: number) => {
     const seconds = Math.floor(Date.now() / 1000 - timestamp);
@@ -130,237 +164,68 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
     return `${Math.floor(seconds / 86400)}d`;
   };
 
+  // Guard if originalPost is missing
+  if (repostedBy && !originalPost) {
+    return (
+      <div className="original-post-card p-3 text-muted ms-5 ps-9">
+        Original post is unavailable
+      </div>
+    );
+  }
+
+  // const fetchLinkPreview = useCallback(
+  //   async (url: string) => {
+  //     if (linkPreviews[url] || loadingPreviews[url]) return;
+
+  //     setLoadingPreviews((prev) => ({ ...prev, [url]: true }));
+
+  //     try {
+  //       const res = await fetch(
+  //         `https://api.microlink.io?url=${encodeURIComponent(url)}`,
+  //       );
+  //       const json = await res.json();
+  //       const { data } = json;
+
+  //       if (json.status === "success" && data) {
+  //         const preview: LinkPreview = {
+  //           title: data.title || null,
+  //           description: data.description || null,
+  //           images: data.image ? [data.image.url] : [],
+  //           siteName: data.publisher || null,
+  //           url: data.url || url,
+  //           favicons: data.logo ? [data.logo.url] : [],
+  //         };
+
+  //         setLinkPreviews((prev) => ({
+  //           ...prev,
+  //           [url]: preview,
+  //         }));
+  //       } else {
+  //         // Handle failure or empty data silently or set a "failed" state
+  //         console.warn("Link preview failed for:", url, json);
+  //       }
+  //     } catch (err) {
+  //       console.error("Link preview fetch failed", err);
+  //     } finally {
+  //       setLoadingPreviews((prev) => ({ ...prev, [url]: false }));
+  //     }
+  //   },
+  //   [linkPreviews, loadingPreviews],
+  // );
+
+  // useEffect(() => {
+  //   urlsInText.forEach((url) => {
+  //     fetchLinkPreview(url);
+  //   });
+  // }, [urlsInText, fetchLinkPreview]);
+
   return (
-    // <div className="top-area" onClick={openPost} style={{ cursor: "pointer" }}>
-    //   {/* Profile Header */}
-    //   <div className="profile-area d-center justify-content-between">
-    //     <div
-    //       className="avatar-item d-flex gap-3 align-items-center"
-    //       onClick={(e) => openUserProfile(e, post.userId)}
-    //       style={{ cursor: "pointer" }}
-    //     >
-    //       <div className="avatar position-relative">
-    //         {/* <div
-    //           style={{
-    //             width: 50,
-    //             height: 50,
-    //             borderRadius: "50%",
-    //             overflow: "hidden",
-    //             border: "1px solid #f05a28",
-    //           }}
-    //         >
-    //           <Image
-    //             src={userAvt || "/images/default-avatar.png"}
-    //             alt={name}
-    //             width={50}
-    //             height={50}
-    //             style={{ width: "100%", height: "100%", objectFit: "cover" }}
-    //             priority
-    //           />
-    //         </div> */}
-    //         <div
-    //           style={{
-    //             width: 50,
-    //             height: 50,
-    //             borderRadius: "50%",
-    //             overflow: "hidden",
-    //             border: "1px solid #f05a28",
-    //             display: "flex",
-    //             alignItems: "center",
-    //             justifyContent: "center",
-    //             // backgroundColor: userAvt ? "transparent" : "#f05a28",
-    //             color: "#fff",
-    //             // fontSize: 20,
-    //             fontWeight: 600,
-    //             textTransform: "uppercase",
-    //           }}
-    //         >
-    //           {userAvt ? (
-    //             <Image
-    //               src={userAvt}
-    //               alt={name}
-    //               width={50}
-    //               height={50}
-    //               style={{ width: "100%", height: "100%", objectFit: "cover" }}
-    //               priority
-    //             />
-    //           ) : (
-    //             <span>{firstLetter}</span>
-    //           )}
-    //         </div>
-    //       </div>
-    //       <div className="info-area">
-    //         <h6 className="m-0 d-flex align-items-baseline gap-2">
-    //           {/* <Link href="/public-profile/post">{name}</Link> */}
-    //           <span className="fw-bold">{name}</span>
-    //           <span className="small">· {timeAgo(created_at)}</span>
-    //         </h6>
-    //         <span className="mdtxt status">@{userName}</span>
-    //       </div>
-    //     </div>
-    //     <div
-    //       className="btn-group cus-dropdown"
-    //       onClick={(e) => e.stopPropagation()}
-    //     >
-    //       <Ts_PostAction
-    //         postUserId={post.userId}
-    //         postId={post.postId}
-    //         isFollowing={post.isFollowing}
-    //       />
-    //     </div>
-    //   </div>
-
-    //   {/* Post Text & Hashtags */}
-    //   <div className="py-4">
-    //     {mainText && (
-    //       <div className="post-text">
-    //         <p className="description">
-    //           {showFullText
-    //             ? mainText
-    //             : mainText.slice(0, 100) + (mainText.length > 100 ? "..." : "")}
-    //           {mainText.length > 100 && (
-    //             <button
-    //               className="see-more-btn"
-    //               onClick={(e) => {
-    //                 e.stopPropagation();
-    //                 setShowFullText((prev) => !prev);
-    //               }}
-    //             >
-    //               {showFullText ? "less" : "more"}
-    //             </button>
-    //           )}
-    //         </p>
-    //       </div>
-    //     )}
-
-    //     {urlsInText.map((url, idx) => (
-    //       <a
-    //         key={idx}
-    //         href={url}
-    //         target="_blank"
-    //         rel="noopener noreferrer"
-    //         className="link-preview d-block rounded p-3 mb-2"
-    //         style={{
-    //           textDecoration: "none",
-    //           color: "inherit",
-    //           border: "1px solid #f05a28",
-    //         }}
-    //         onClick={(e) => e.stopPropagation()}
-    //       >
-    //         <p className="small mb-1">
-    //           {(() => {
-    //             try {
-    //               return new URL(url).hostname;
-    //             } catch {
-    //               return url;
-    //             }
-    //           })()}
-    //         </p>
-    //         <p className="description small">{url}</p>
-    //       </a>
-    //     ))}
-
-    //     <p className="description">{postId}</p>
-    //     {hashTags && (
-    //       <p className="hastag d-flex gap-2">
-    //         {hashTags?.map((tag) => (
-    //           <Link key={tag} href="#">
-    //             {tag}
-    //           </Link>
-    //         ))}
-    //       </p>
-    //     )}
-    //   </div>
-
-    //   {postImgs.length > 0 && (
-    //     <div
-    //       className={`post-media-container ${
-    //         postImgs.length > 1 ? "clickable" : ""
-    //       }`}
-    //       onClick={(e) => {
-    //         e.stopPropagation();
-    //         handleImageClick();
-    //       }}
-    //     >
-    //       <Image
-    //         src={postImgs[currentImgIndex] || "/images/default-post.png"}
-    //         alt={`Post Image ${currentImgIndex + 1}`}
-    //         width={600}
-    //         height={400}
-    //         style={{ objectFit: "contain", width: "100%", height: "auto" }}
-    //         onClick={(e) => openImageViewer(e, postImgs[currentImgIndex])}
-    //       />
-    //       {postImgs.length > 1 && (
-    //         <div className="carousel-indicator">
-    //           {currentImgIndex + 1} / {postImgs.length}
-    //         </div>
-    //       )}
-    //     </div>
-    //   )}
-
-    //   {postVideos.length > 0 && (
-    //     <div className="post-media-container">
-    //       {postVideos.map((videoUrl, idx) => (
-    //         <video key={idx} controls>
-    //           <source src={videoUrl} type="video/mp4" />
-    //           Your browser does not support the video tag.
-    //         </video>
-    //       ))}
-    //     </div>
-    //   )}
-
-    //   {/* {postPdfs.length > 0 && (
-    //     <div className="pdf-container">
-    //       {postPdfs.map((pdfUrl, idx) => (
-    //         <div key={idx} className="pdf-item">
-    //           <Link href={pdfUrl} target="_blank" rel="noopener noreferrer">
-    //             <Image src={pdfUrl} alt="PDF" width={80} height={80} />
-    //             <p>View PDF {postPdfs.length > 1 ? idx + 1 : ""}</p>
-    //           </Link>
-    //         </div>
-    //       ))}
-    //     </div>
-    //   )} */}
-    //   {postPdfs.length > 0 && (
-    //     <div className="pdf-container">
-    //       {postPdfs.map((pdfUrl, idx) => (
-    //         <Ts_PdfCarousel key={idx} pdfUrl={pdfUrl} onOpen={openPdf} />
-    //       ))}
-    //     </div>
-    //   )}
-
-    //   {isImageOpen && activeImage && (
-    //     <div
-    //       className="image-viewer-overlay"
-    //       onClick={() => setIsImageOpen(false)}
-    //     >
-    //       <div
-    //         className="image-viewer-content"
-    //         onClick={(e) => e.stopPropagation()}
-    //       >
-    //         <Image
-    //           src={activeImage}
-    //           alt="Fullscreen image"
-    //           fill
-    //           style={{ objectFit: "contain" }}
-    //         />
-
-    //         <button
-    //           className="image-close-btn"
-    //           onClick={() => setIsImageOpen(false)}
-    //         >
-    //           ✕
-    //         </button>
-    //       </div>
-    //     </div>
-    //   )}
-    // </div>
     <div className="top-area">
       {/* 🧑 Repost User Header */}
       {repostedBy && (
         <div className="profile-area d-center justify-content-between mb-3">
           <div className="avatar-item d-flex gap-3 align-items-center">
-            <div
+            {/* <div
               style={{
                 width: 48,
                 height: 48,
@@ -376,6 +241,42 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
                 height={48}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
+            </div> */}
+            <div className="avatar position-relative">
+              <div
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: "1px solid #f05a28",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  // backgroundColor: userAvt ? "transparent" : "#f05a28",
+                  color: "#fff",
+                  // fontSize: 20,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                }}
+              >
+                {repostedBy.avatar ? (
+                  <Image
+                    src={repostedBy.avatar || "/images/default-avatar.png"}
+                    alt={repostedBy.name}
+                    width={50}
+                    height={50}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                    priority
+                  />
+                ) : (
+                  <span>{firstLetter}</span>
+                )}
+              </div>
             </div>
 
             <div className="info-area">
@@ -401,8 +302,11 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
         </div>
       )}
 
+      {/* 💬 Repost Comment */}
+      {repostedBy?.title && <p className="mb-3">{repostedBy.title}</p>}
+
       {/* 🔁 Repost Header */}
-      {repostedBy && (
+      {repostedBy && originalPost && (
         <div className="repost-header d-flex align-items-center gap-2 mt-2 text-muted ms-5 ps-9">
           {/* <span>🔁</span> */}
           <i className="material-symbols-outlined mat-icon">repeat</i>
@@ -437,9 +341,6 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
           </span>
         </div>
       )}
-
-      {/* 💬 Repost Comment */}
-      {repostedBy?.comment && <p className="mb-3">{repostedBy.comment}</p>}
 
       {/* 📦 Original Post Card */}
       <div className="original-post-wrapper ms-5 ps-9">
@@ -510,18 +411,73 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
               <p className="description small">{url}</p>
             </a>
           ))}
+          {/* {urlsInText.map((url, idx) => {
+            const preview = linkPreviews[url];
+            const isLoading = loadingPreviews[url];
+
+            return (
+              <div
+                key={url} // Use URL as key
+                className="link-preview rounded p-3 mb-2"
+                // style={{ border: "1px solid #f05a28" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {isLoading && (
+                  <p className="small text-muted">Loading preview…</p>
+                )}
+
+                {!isLoading && preview?.url && (
+                  <Link
+                    href={preview.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    {preview.images?.length > 0 && (
+                      <Image
+                        src={preview.images[0]}
+                        alt={preview.title ?? "Link preview"}
+                        width={400}
+                        height={200}
+                        style={{ width: "100%", borderRadius: 8 }}
+                      />
+                    )}
+
+                    <div className="mt-2">
+                      <p className="fw-bold mb-1">
+                        {preview.title ?? preview.siteName}
+                      </p>
+                      {preview.description && (
+                        <p className="small">{preview.description}</p>
+                      )}
+                      <p className="small">
+                        {preview.siteName ??
+                          (() => {
+                            try {
+                              return new URL(url).hostname;
+                            } catch {
+                              return url;
+                            }
+                          })()}
+                      </p>
+                    </div>
+                  </Link>
+                )}
+              </div>
+            );
+          })} */}
 
           {/* Images */}
-          {originalPost.imgs.length > 0 && (
+          {(originalPost?.imgs?.length ?? 0) > 0 && (
             <div
               className={`post-media-container ${
-                originalPost.imgs.length > 1 ? "clickable" : ""
+                (originalPost?.imgs?.length ?? 0) > 1 ? "clickable" : ""
               }`}
               onClick={handleImageClick}
             >
               <Image
                 src={
-                  originalPost.imgs[currentImgIndex] ||
+                  originalPost?.imgs?.[currentImgIndex] ||
                   "/images/default-post.png"
                 }
                 alt="Post image"
@@ -533,9 +489,9 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
                   height: "auto",
                 }}
               />
-              {originalPost.imgs.length > 1 && (
+              {(originalPost?.imgs?.length ?? 0) > 1 && (
                 <div className="carousel-indicator">
-                  {currentImgIndex + 1} / {originalPost.imgs.length}
+                  {currentImgIndex + 1} / {originalPost?.imgs?.length ?? 0}
                 </div>
               )}
             </div>
@@ -553,13 +509,20 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
           )}
 
           {/* PDFs */}
-          {pdfs.length > 0 && (
+          {/* {pdfs.length > 0 && (
             <div className="pdf-container">
               {pdfs.map((pdf, idx) => (
                 <Link key={idx} href={pdf} target="_blank" className="pdf-item">
                   <div className="pdf-box">PDF</div>
                   <p>View PDF</p>
                 </Link>
+              ))}
+            </div>
+          )} */}
+          {pdfs.length > 0 && (
+            <div className="pdf-container">
+              {pdfs.map((pdfUrl, idx) => (
+                <Ts_PdfCarousel key={idx} pdfUrl={pdfUrl} onOpen={openPdf} />
               ))}
             </div>
           )}

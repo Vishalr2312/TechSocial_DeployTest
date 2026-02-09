@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Ts_PostAction from "./Ts_PostAction";
@@ -9,6 +9,15 @@ import dynamic from "next/dynamic";
 import Ts_PdfCarousel from "./Ts_PdfCarousel";
 
 // const PdfCarousel = dynamic(() => import("./Ts_PdfCarousel"), { ssr: false });
+
+interface LinkPreview {
+  title: string | null;
+  description: string | null;
+  images: string[];
+  siteName: string | null;
+  url: string;
+  favicons: string[];
+}
 
 interface Ts_PostProps {
   postId: number;
@@ -30,6 +39,7 @@ interface Ts_PostProps {
   total_share: number;
   ai_search_views: number;
   isFollowing: boolean;
+  isSaved: boolean;
 }
 
 interface Ts_PostComponentProps {
@@ -51,6 +61,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
     postVideos = [],
     postPdfs = [],
     isFollowing,
+    isSaved,
   } = post;
 
   // ✅ Image carousel state
@@ -64,9 +75,30 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
 
   const [showFullText, setShowFullText] = useState(false);
 
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const urlsInText = postText?.match(urlRegex) || [];
-  const mainText = postText?.replace(urlRegex, "").trim() || "";
+  const { urlsInText, mainText } = useMemo(() => {
+    if (!postText) return { urlsInText: [], mainText: "" };
+
+    // Improved regex to avoid matching trailing punctuation
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const rawMatches = postText.match(urlRegex) || [];
+
+    // Clean trailing punctuation from URLs
+    const cleanUrls = Array.from(
+      new Set(rawMatches.map((url) => url.replace(/[.,;!?)]+$/, ""))),
+    );
+    const textWithoutUrls = postText.replace(urlRegex, "").trim();
+
+    return { urlsInText: cleanUrls, mainText: textWithoutUrls };
+  }, [postText]);
+  const [linkPreviews, setLinkPreviews] = useState<Record<string, LinkPreview>>(
+    {},
+  );
+
+  const [loadingPreviews, setLoadingPreviews] = useState<
+    Record<string, boolean>
+  >({});
+
+  const fetchedUrlsRef = useRef<Set<string>>(new Set());
 
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -106,6 +138,97 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
 
     return `${Math.floor(seconds / 86400)}d`;
   };
+
+  // const fetchLinkPreview = useCallback(
+  //   async (url: string) => {
+  //     if (linkPreviews[url] || loadingPreviews[url]) return;
+
+  //     setLoadingPreviews((prev) => ({ ...prev, [url]: true }));
+
+  //     try {
+  //       const res = await fetch(
+  //         `https://api.microlink.io?url=${encodeURIComponent(url)}`,
+  //       );
+  //       const json = await res.json();
+  //       const { data } = json;
+
+  //       if (json.status === "success" && data) {
+  //         const preview: LinkPreview = {
+  //           title: data.title || null,
+  //           description: data.description || null,
+  //           images: data.image ? [data.image.url] : [],
+  //           siteName: data.publisher || null,
+  //           url: data.url || url,
+  //           favicons: data.logo ? [data.logo.url] : [],
+  //         };
+
+  //         setLinkPreviews((prev) => ({
+  //           ...prev,
+  //           [url]: preview,
+  //         }));
+  //       } else {
+  //          // Handle failure or empty data silently or set a "failed" state
+  //          console.warn("Link preview failed for:", url, json);
+  //       }
+  //     } catch (err) {
+  //       console.error("Link preview fetch failed", err);
+  //     } finally {
+  //       setLoadingPreviews((prev) => ({ ...prev, [url]: false }));
+  //     }
+  //   },
+  //   [linkPreviews, loadingPreviews],
+  // );
+  // const fetchLinkPreview = useCallback(async (url: string) => {
+  //   setLoadingPreviews((prev) => {
+  //     if (prev[url]) return prev;
+  //     return { ...prev, [url]: true };
+  //   });
+
+  //   try {
+  //     const res = await fetch(
+  //       `https://api.microlink.io?url=${encodeURIComponent(url)}`,
+  //     );
+  //     const json = await res.json();
+
+  //     if (json.status === "success" && json.data) {
+  //       const data = json.data;
+
+  //       setLinkPreviews((prev) => {
+  //         if (prev[url]) return prev; // 🛑 hard stop duplicate
+  //         return {
+  //           ...prev,
+  //           [url]: {
+  //             title: data.title ?? null,
+  //             description: data.description ?? null,
+  //             images: data.image ? [data.image.url] : [],
+  //             siteName: data.publisher ?? null,
+  //             url: data.url ?? url,
+  //             favicons: data.logo ? [data.logo.url] : [],
+  //           },
+  //         };
+  //       });
+  //     }
+  //   } catch (err) {
+  //     console.error("Link preview fetch failed", err);
+  //   } finally {
+  //     setLoadingPreviews((prev) => ({ ...prev, [url]: false }));
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   urlsInText.forEach((url) => {
+  //     fetchLinkPreview(url);
+  //   });
+  // }, [urlsInText, fetchLinkPreview]);
+//   useEffect(() => {
+//   urlsInText.forEach((url) => {
+//     if (!fetchedUrlsRef.current.has(url)) {
+//       fetchedUrlsRef.current.add(url);
+//       fetchLinkPreview(url);
+//     }
+//   });
+// }, [urlsInText, fetchLinkPreview]);
+
 
   return (
     <div className="top-area" onClick={openPost} style={{ cursor: "pointer" }}>
@@ -183,6 +306,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
             postUserId={post.userId}
             postId={post.postId}
             isFollowing={post.isFollowing}
+            isSaved={post.isSaved}
             onDelete={onDelete}
           />
         </div>
@@ -237,6 +361,61 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
             <p className="description small">{url}</p>
           </a>
         ))}
+        {/* {urlsInText.map((url, idx) => {
+          const preview = linkPreviews[url];
+          const isLoading = loadingPreviews[url];
+
+          return (
+            <div
+              key={url} // Use URL as key
+              className="link-preview rounded p-3 mb-2"
+              // style={{ border: "1px solid #f05a28" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {isLoading && (
+                <p className="small text-muted">Loading preview…</p>
+              )}
+
+              {!isLoading && preview?.url && (
+                <Link
+                  href={preview.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  {preview.images?.length > 0 && (
+                    <Image
+                      src={preview.images[0]}
+                      alt={preview.title ?? "Link preview"}
+                      width={400}
+                      height={200}
+                      style={{ width: "100%", borderRadius: 8 }}
+                    />
+                  )}
+
+                  <div className="mt-2">
+                    <p className="fw-bold mb-1">
+                      {preview.title ?? preview.siteName}
+                    </p>
+                    {preview.description && (
+                      <p className="small">{preview.description}</p>
+                    )}
+                    <p className="small">
+                      {preview.siteName ??
+                        (() => {
+                          try {
+                            return new URL(url).hostname;
+                          } catch {
+                            return url;
+                          }
+                        })()}
+                    </p>
+                  </div>
+                </Link>
+              )}
+            </div>
+          );
+        })} */}
 
         <p className="description">{postId}</p>
         {hashTags && (

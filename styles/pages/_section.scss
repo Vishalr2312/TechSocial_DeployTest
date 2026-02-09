@@ -726,6 +726,7 @@
     background: var(--section-1st-color);
     box-shadow: var(--box-shadow);
     border-radius: 5px;
+    height: 85vh; // my change
     .cus-scrollbar {
       max-height: 60vh;
     }
@@ -765,6 +766,9 @@
       }
     }
     .main {
+      display: flex; // my change
+      flex-direction: column; // my change
+      height: 100%; // my change
       .chat-head {
         background: var(--section-1st-color);
         border-bottom: 1px solid var(--border-color);
@@ -780,6 +784,9 @@
     .main-chat-box {
       top: initial;
       background-color: var(--section-1st-color);
+      flex: 1;  // my change
+      overflow-y: auto;  // my change
+      padding-bottom: 10px;  // my change
       li {
         display: flex;
         gap: 15px;
@@ -824,6 +831,7 @@
       }
     }
     .chat-footer {
+      flex-shrink: 0; //my change
       form {
         background-color: var(--box-1st-color);
         border-radius: 10px;

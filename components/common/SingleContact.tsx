@@ -12,9 +12,10 @@ import { useAppSelector } from "@/Redux/hooks";
 
 interface SingleContactProps {
   data: UserList;
+  onFollowToggle: (userId: number, isFollowing: number) => void;
 }
 
-const SingleContact = ({ data }: SingleContactProps) => {
+const SingleContact = ({ data, onFollowToggle }: SingleContactProps) => {
   // const { avt, id, name } = data;
   const { id, name, picture, isFollower, isFollowing } = data;
   const firstLetter = name?.charAt(0).toUpperCase() || "?";
@@ -22,9 +23,24 @@ const SingleContact = ({ data }: SingleContactProps) => {
   const loggedInUserId = useAppSelector((state) => state.user.user?.id);
   const isOwnProfile = loggedInUserId === id;
 
-  const actionList: [string, string][] = isFollowing
-    ? [["Unfollow", "person_remove"]]
-    : [["Follow", "person_add"]];
+  // const actionList: [string, string][] = isFollowing
+  //   ? [["Unfollow", "person_remove"]]
+  //   : [["Follow", "person_add"]];
+  const actionList = isFollowing
+    ? [
+        {
+          label: "Unfollow",
+          icon: "person_remove",
+          onClick: () => onFollowToggle(id, isFollowing),
+        },
+      ]
+    : [
+        {
+          label: "Follow",
+          icon: "person_add",
+          onClick: () => onFollowToggle(id, isFollowing),
+        },
+      ];
 
   return (
     <>

@@ -80,7 +80,7 @@ interface BasePost {
   hashtags: string[];
   mentionUsers: string[];
   is_promotion: number;
-  is_saved: number;
+  is_saved: boolean;
   share_link: string;
 }
 
@@ -129,7 +129,7 @@ interface PostItem extends BasePost {
   is_like: boolean;
   is_reported: number;
   is_promotion: number;
-  is_saved: number;
+  is_saved: boolean;
   hashtags: string[];
   mentionUsers: string[];
   user: User;
