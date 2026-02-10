@@ -40,12 +40,12 @@ const PageCard = ({ page }: { page: PageProps }) => {
         </div>
 
         {/* Contact Action */}
-        <ContactAction
+        {/* <ContactAction
           actionList={[
             ["Unfollow", "person_remove"],
             ["Hide", "hide_source"],
           ]}
-        />
+        /> */}
       </div>
       <div className="friends-list d-flex gap-3 align-items-center text-center">
         <ul className="d-flex align-items-center justify-content-center">

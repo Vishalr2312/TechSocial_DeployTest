@@ -21,12 +21,12 @@ const GroupCard = ({ data }: { data: GroupProps }) => {
         <Image className="avatar-img w-100" src={banner_img} alt="avatar" />
         <div className="abs-area w-100 position-absolute top-0 p-3 d-center justify-content-end">
           {/* Contact Action */}
-          <ContactAction
+          {/* <ContactAction
             actionList={[
               ["Unfollow", "person_remove"],
               ["Hide", "hide_source"],
             ]}
-          />
+          /> */}
         </div>
       </div>
       <div className="abs-avatar-item">

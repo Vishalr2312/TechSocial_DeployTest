@@ -47,12 +47,12 @@ const ChatOption = () => {
                   </div>
                 </div>
                 {/* Contact Action */}
-                <ContactAction
+                {/* <ContactAction
                   actionList={[
                     ["Unfollow", "person_remove"],
                     ["Hide Contact", "hide_source"],
                   ]}
-                />
+                /> */}
               </div>
               <form
                 action="#"

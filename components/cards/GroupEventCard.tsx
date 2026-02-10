@@ -37,12 +37,12 @@ const GroupEventCard = () => {
             Share
           </Link>
           {/* Contact Action */}
-          <ContactAction
+          {/* <ContactAction
             actionList={[
               ["Unfollow", "person_remove"],
               ["Hide", "hide_source"],
             ]}
-          />
+          /> */}
         </div>
       </div>
     </div>

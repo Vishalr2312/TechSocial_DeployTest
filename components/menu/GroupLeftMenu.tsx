@@ -61,12 +61,12 @@ const GroupLeftMenu = ({ name, type, img, adminTools }: GroupMenuProps) => {
             </Link>
 
             {/* Contact Action */}
-            <ContactAction
+            {/* <ContactAction
               actionList={[
                 ["Unfollow", "person_remove"],
                 ["Hide", "hide_source"],
               ]}
-            />
+            /> */}
           </div>
         </div>
         <ul className="profile-link my-5 pb-5">
