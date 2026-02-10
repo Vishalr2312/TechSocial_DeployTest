@@ -10,10 +10,10 @@ import ContactAction from "@/components/ui/ContactAction";
 import { useAppSelector } from "@/Redux/hooks";
 
 const Ts_PublicProfileBanner = () => {
-//   const path = usePathname();
+  //   const path = usePathname();
   const pathname = usePathname();
-//   const splitPath = path.split("/");
-//   const lastPath = splitPath[splitPath.length - 1];
+  //   const splitPath = path.split("/");
+  //   const lastPath = splitPath[splitPath.length - 1];
 
   const user = useAppSelector((state) => state.publicProfile.user);
 
@@ -117,8 +117,18 @@ const Ts_PublicProfileBanner = () => {
             {/* Contact Action */}
             <ContactAction
               actionList={[
-                ["Block", "lock"],
-                ["Report", "flag"],
+                // ["Block", "lock"],
+                // ["Report", "flag"],
+                {
+                  label: "Unfollow",
+                  icon: "person_remove",
+                  onClick: () => {},
+                },
+                {
+                  label: "Message",
+                  icon: "chat",
+                  onClick: () => {},
+                },
               ]}
             />
           </div>
