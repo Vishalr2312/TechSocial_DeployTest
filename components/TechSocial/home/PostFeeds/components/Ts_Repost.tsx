@@ -40,6 +40,7 @@ interface Ts_RepostProps {
   ai_search_views: number;
   isFollowing: boolean;
   isSaved: boolean;
+  isOnline: boolean;
   repostedBy?: {
     name: string;
     username: string;
@@ -81,6 +82,7 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
     isFollowing,
     repostedBy,
     originalPost,
+    isOnline,
   } = post;
 
   // ✅ Image carousel state
@@ -242,7 +244,9 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div> */}
-            <div className="avatar position-relative">
+            <div
+              className={`avatar position-relative ${isOnline ? "online" : "not-online"}`}
+            >
               <div
                 style={{
                   width: 50,

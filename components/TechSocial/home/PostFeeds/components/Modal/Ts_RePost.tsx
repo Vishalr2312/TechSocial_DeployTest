@@ -39,6 +39,7 @@ interface Ts_RePostProps {
   ai_search_views: number;
   isFollowing: boolean;
   isSaved: boolean;
+  isOnline: boolean;
 }
 
 interface Ts_RePostComponentProps {
@@ -60,6 +61,7 @@ const Ts_RePost = ({ post, onDelete }: Ts_RePostComponentProps) => {
     postVideos = [],
     postPdfs = [],
     isFollowing,
+    isOnline,
   } = post;
 
   // ✅ Image carousel state
@@ -193,7 +195,7 @@ const Ts_RePost = ({ post, onDelete }: Ts_RePostComponentProps) => {
           onClick={(e) => openUserProfile(e, post.userId)}
           style={{ cursor: "pointer" }}
         >
-          <div className="avatar position-relative">
+          <div className={`avatar position-relative ${isOnline ? "online" : "not-online"}`}>
             {/* <div
               style={{
                 width: 50,
