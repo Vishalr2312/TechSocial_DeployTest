@@ -38,6 +38,7 @@ interface Ts_PostReactionProps {
   ai_search_views: number;
   isFollowing: boolean;
   isSaved: boolean;
+  isOnline: boolean;
 }
 
 const Ts_PostReaction = ({
