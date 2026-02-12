@@ -13,7 +13,7 @@ export const layoutConfig: Record<
     showBottomMenu: false,
     showScrollToTop: false,
   },
-  '/subscription': {
+  '/subscribe': {
     showNavBar: false,
     showBottomMenu: false,
     showScrollToTop: false,

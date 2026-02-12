@@ -12,6 +12,8 @@ import Image from "next/image";
 import axiosCall from "@/Utils/TsAPIcall";
 import ReactMarkdown from "react-markdown";
 import DarkLoader from "../Loader/DarkLoader";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export interface SubscriptionStatusResponse {
   status: number;
@@ -28,6 +30,7 @@ export interface ChatApiResponse {
 }
 
 const Ts_ExploreAI = () => {
+  const router = useRouter();
   // 🔹 State to store textarea value
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -99,7 +102,7 @@ const Ts_ExploreAI = () => {
         if (res?.data?.data?.errors) {
           const errors = res.data.data.errors;
           const firstField = Object.keys(
-            errors ?? {}
+            errors ?? {},
           )[0] as keyof typeof errors;
           const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
           toast.error(firstMessage);
@@ -133,7 +136,7 @@ const Ts_ExploreAI = () => {
           if (res?.data?.data?.errors) {
             const errors = res.data.data.errors;
             const firstField = Object.keys(
-              errors ?? {}
+              errors ?? {},
             )[0] as keyof typeof errors;
             const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
             toast.error(firstMessage);
@@ -148,8 +151,46 @@ const Ts_ExploreAI = () => {
 
       // Add AI response to messages
       setMessages((prev) => [...prev, { text: aiResponse, sender: "ai" }]);
-    } catch (err) {
+    } catch (err: any) {
+      // catch (err) {
+      //   console.error(err);
+      //   setMessages((prev) => [
+      //     ...prev,
+      //     {
+      //       text: "Oops! Something went wrong while fetching AI response.",
+      //       sender: "ai",
+      //     },
+      //   ]);
       console.error(err);
+
+      if (axios.isAxiosError(err) && err.response) {
+        const { status, data } = err.response;
+
+        // Handle subscription / limit errors
+        if (status === 403 || status === 429) {
+          const errorMessage = data?.message?.error || "Access denied.";
+
+          const subscribeUrl = data?.message?.subscribe_url || "/subscribe";
+
+          // Show backend error message in chat
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: errorMessage,
+              sender: "ai",
+            },
+          ]);
+
+          // Redirect after short delay
+          setTimeout(() => {
+            router.push(subscribeUrl);
+          }, 1500);
+
+          return;
+        }
+      }
+
+      // Fallback error
       setMessages((prev) => [
         ...prev,
         {
@@ -194,7 +235,7 @@ const Ts_ExploreAI = () => {
         if (res?.data?.data?.errors) {
           const errors = res.data.data.errors;
           const firstField = Object.keys(
-            errors ?? {}
+            errors ?? {},
           )[0] as keyof typeof errors;
           const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
           toast.error(firstMessage);

@@ -13,6 +13,7 @@ interface Ts_PostProps {
   name: string;
   userName: string;
   userAvt: string;
+  isOnline: boolean;
 }
 
 const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
@@ -26,6 +27,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
     postImgs = [],
     postVideos = [],
     postPdfs = [],
+    isOnline,
   } = post;
 
   // ✅ Image carousel state
@@ -38,6 +40,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
   };
 
   const [showFullText, setShowFullText] = useState(false);
+  const firstLetter = name?.charAt(0).toUpperCase() || "?";
 
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const urlsInText = postText?.match(urlRegex) || [];
@@ -48,7 +51,9 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
       {/* Profile Header */}
       <div className="profile-area d-center justify-content-between">
         <div className="avatar-item d-flex gap-3 align-items-center">
-          <div className="avatar position-relative">
+          <div
+            className={`avatar position-relative ${isOnline ? "online" : "not-online"}`}
+          >
             <div
               style={{
                 width: 50,
@@ -56,16 +61,28 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
                 borderRadius: "50%",
                 overflow: "hidden",
                 border: "1px solid #f05a28",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                // backgroundColor: userAvt ? "transparent" : "#f05a28",
+                color: "#fff",
+                // fontSize: 20,
+                fontWeight: 600,
+                textTransform: "uppercase",
               }}
             >
-              <Image
-                src={userAvt || "/images/default-avatar.png"}
-                alt={name}
-                width={50}
-                height={50}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                priority
-              />
+              {userAvt ? (
+                <Image
+                  src={userAvt}
+                  alt={name}
+                  width={50}
+                  height={50}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  priority
+                />
+              ) : (
+                <span>{firstLetter}</span>
+              )}
             </div>
           </div>
           <div className="info-area">

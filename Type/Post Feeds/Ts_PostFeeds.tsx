@@ -223,7 +223,7 @@ interface User {
   is_login_first_time: number;
   user_token: string | null;
   user_connection_id: number | null;
-  is_online: number | null;
+  is_online: boolean;
   state: string | null;
   height: string | null;
   color: string | null;

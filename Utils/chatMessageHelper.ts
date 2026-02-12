@@ -1,6 +1,9 @@
 import CryptoJS from "crypto-js";
 import { ChatRoom } from "@/Type/ChatsSection/chatRoom";
-import { ChatMessageReplyModel, ChatMessageUI } from "@/Type/ChatsSection/chatMessage";
+import {
+  ChatMessageReplyModel,
+  ChatMessageUI,
+} from "@/Type/ChatsSection/chatMessage";
 import { getChatSocket } from "@/components/TechSocial/socket/chatSocket";
 
 export const mapRoomToSingleChat = (room: ChatRoom, currentUserId: number) => {
@@ -183,4 +186,10 @@ export const emitDeleteMessage = (msg: ChatMessageUI, deleteScope: 1 | 2) => {
     room: msg.room_id,
     deleteScope,
   });
+};
+
+export const findRoomWithUser = (rooms: any[], userId: number) => {
+  return rooms.find((room) =>
+    room.chatRoomUser.some((u: any) => u.user_id === userId),
+  );
 };

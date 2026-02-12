@@ -8,7 +8,7 @@ export interface ChatRoom {
   title: string | null;
   order_id: number | null;
   club_id: number | null;
-  type: number;
+  type: ChatRoomType;
   image: string | null;
   imageUrl: string;
   description: string | null;
@@ -73,3 +73,27 @@ export interface ChatUser {
   profileCategoryName: string | null;
   userLiveDetail: any | null;
 }
+
+// Create chat room types starts
+export enum ChatRoomType {
+  Single = 1,
+  Group = 2,
+}
+
+export interface NewChatRoom {
+  id: number;
+  title: string | null;
+  order_id: number | null;
+  club_id: number | null;
+  type: ChatRoomType;
+  image: string | null;
+  description: string | null;
+  chat_access_group: number;
+  status: number;
+  created_at: number; // Unix timestamp
+  created_by: number;
+  updated_at: number | null;
+  updated_by: number | null;
+  imageUrl: string; // already processed URL
+}
+// Create chat room types ends

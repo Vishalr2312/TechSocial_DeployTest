@@ -495,13 +495,16 @@ const Ts_Message = () => {
       <div className="m-4 text-end chat-footer">
         {replyToMessage && (
           <div className="reply-preview">
-            <div className="reply-preview-header">
+            <div className="reply-preview-header d-flex justify-content-between">
               {/* <span className="replying-to">
                       Replying to{" "}
                       {replyToMessage.created_by === currentUserId
                         ? "You"
                         : peerUser?.username}
                     </span> */}
+              <div className="reply-preview-body">
+                <p>{replyToMessage.decryptedMessage}</p>
+              </div>
 
               <button
                 type="button"
@@ -510,10 +513,6 @@ const Ts_Message = () => {
               >
                 ✕
               </button>
-            </div>
-
-            <div className="reply-preview-body">
-              {replyToMessage.decryptedMessage}
             </div>
           </div>
         )}

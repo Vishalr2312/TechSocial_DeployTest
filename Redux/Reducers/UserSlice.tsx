@@ -8,6 +8,7 @@ interface UserState {
   token: string | null;
   loading: boolean;
   error: string | null;
+  followStatus: Record<number, boolean>;
 }
 
 const initialState: UserState = {
@@ -16,6 +17,7 @@ const initialState: UserState = {
   token: null,
   loading: false,
   error: null,
+  followStatus: {},
 };
 
 const userSlice = createSlice({
@@ -43,8 +45,22 @@ const userSlice = createSlice({
         secureLocalStorage.setItem("userData", JSON.stringify(state.user));
       }
     },
+
+    setFollowStatus: (
+      state,
+      action: PayloadAction<{ userId: number; isFollowing: boolean }>,
+    ) => {
+      if (state.followStatus) {
+        state.followStatus[action.payload.userId] = action.payload.isFollowing;
+      } else {
+        state.followStatus = {
+          [action.payload.userId]: action.payload.isFollowing,
+        };
+      }
+    },
   },
 });
 
-export const { updateUser, signInUser, setUser, signOutUser } = userSlice.actions;
+export const { updateUser, signInUser, setUser, signOutUser, setFollowStatus } =
+  userSlice.actions;
 export default userSlice.reducer;

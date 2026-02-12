@@ -40,6 +40,7 @@ interface Ts_PostProps {
   ai_search_views: number;
   isFollowing: boolean;
   isSaved: boolean;
+  isOnline: boolean;
 }
 
 interface Ts_PostComponentProps {
@@ -62,6 +63,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
     postPdfs = [],
     isFollowing,
     isSaved,
+    isOnline,
   } = post;
 
   // ✅ Image carousel state
@@ -220,15 +222,14 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
   //     fetchLinkPreview(url);
   //   });
   // }, [urlsInText, fetchLinkPreview]);
-//   useEffect(() => {
-//   urlsInText.forEach((url) => {
-//     if (!fetchedUrlsRef.current.has(url)) {
-//       fetchedUrlsRef.current.add(url);
-//       fetchLinkPreview(url);
-//     }
-//   });
-// }, [urlsInText, fetchLinkPreview]);
-
+  //   useEffect(() => {
+  //   urlsInText.forEach((url) => {
+  //     if (!fetchedUrlsRef.current.has(url)) {
+  //       fetchedUrlsRef.current.add(url);
+  //       fetchLinkPreview(url);
+  //     }
+  //   });
+  // }, [urlsInText, fetchLinkPreview]);
 
   return (
     <div className="top-area" onClick={openPost} style={{ cursor: "pointer" }}>
@@ -239,7 +240,10 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
           onClick={(e) => openUserProfile(e, post.userId)}
           style={{ cursor: "pointer" }}
         >
-          <div className="avatar position-relative">
+          {/* <div className="avatar position-relative"> */}
+          <div
+            className={`avatar position-relative ${isOnline ? "online" : "not-online"}`}
+          >
             {/* <div
               style={{
                 width: 50,

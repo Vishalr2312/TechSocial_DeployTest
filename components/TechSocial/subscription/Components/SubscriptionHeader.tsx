@@ -19,7 +19,7 @@ const SubscriptionHeader = () => {
         <p className="subscription-subtitle">
           Enjoy a premium experience with exclusive tools, priority support,
           enhanced security, and early feature access. <br />
-          (For organizations, sign up here)
+          {/* (For organizations, sign up here) */}
         </p>
       </div>
     </>

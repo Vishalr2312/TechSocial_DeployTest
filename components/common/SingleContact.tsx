@@ -17,28 +17,29 @@ interface SingleContactProps {
 
 const SingleContact = ({ data, onFollowToggle }: SingleContactProps) => {
   // const { avt, id, name } = data;
-  const { id, name, picture, isFollower, isFollowing } = data;
+  const { id, name, picture, isFollower, isFollowing: apiIsFollowing } = data;
   const firstLetter = name?.charAt(0).toUpperCase() || "?";
-
+  const followStatus = useAppSelector((state) => state.user.followStatus);
   const loggedInUserId = useAppSelector((state) => state.user.user?.id);
   const isOwnProfile = loggedInUserId === id;
 
   // const actionList: [string, string][] = isFollowing
   //   ? [["Unfollow", "person_remove"]]
   //   : [["Follow", "person_add"]];
+  const isFollowing = followStatus[id] ?? apiIsFollowing === 1;
   const actionList = isFollowing
     ? [
         {
           label: "Unfollow",
           icon: "person_remove",
-          onClick: () => onFollowToggle(id, isFollowing),
+          onClick: () => onFollowToggle(id, apiIsFollowing),
         },
       ]
     : [
         {
           label: "Follow",
           icon: "person_add",
-          onClick: () => onFollowToggle(id, isFollowing),
+          onClick: () => onFollowToggle(id, apiIsFollowing),
         },
       ];
 

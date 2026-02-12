@@ -39,7 +39,7 @@ const HomeLeft = ({ clss }: { clss?: string }) => {
           </button>
         </div>
         <div className="profile-pic d-flex gap-2 align-items-center">
-          <div className="avatar position-relative">
+          <div className="position-relative">
             <div
               style={{
                 width: 50,

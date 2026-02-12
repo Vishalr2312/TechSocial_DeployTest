@@ -111,12 +111,18 @@ const Ts_InputBox = ({ onSubmit, loading }: Ts_InputBoxProps) => {
             </button> */}
           </div>
         </div>
-        <div className="btn-area d-flex">
+        <div className="btn-area d-flex gap-2">
           <button type={"submit"} className="cmn-btn px-2 px-sm-5 px-lg-6">
             {/* <i className="material-symbols-outlined mat-icon m-0 fs-xxl">
               near_me
             </i> */}
             <h6>Repost</h6>
+          </button>
+          <button className="cmn-btn px-2 px-sm-5 px-lg-6">
+            <i className="material-symbols-outlined mat-icon m-0 fs-lg">
+              share
+            </i>
+            {/* <h6>Share</h6> */}
           </button>
         </div>
       </div>

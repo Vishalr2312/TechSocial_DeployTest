@@ -1,6 +1,11 @@
 import { useAppDispatch, useAppSelector } from "@/Redux/hooks";
+import { setActiveRoom } from "@/Redux/Reducers/ChatSection/chatSlice";
 import { toggleFollow, toggleSave } from "@/Redux/Reducers/PostFeeds/PostSlice";
+import { setFollowStatus } from "@/Redux/Reducers/UserSlice";
+import { NewChatRoom } from "@/Type/ChatsSection/chatRoom";
 import axiosCall from "@/Utils/APIcall";
+import { findRoomWithUser } from "@/Utils/chatMessageHelper";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 interface FollowUnfollowApiResponse {
@@ -13,6 +18,15 @@ interface SaveUnsaveApiResponse {
   status: number;
   message: string;
   data: [];
+}
+
+export interface CreateChatRoomApiResponse {
+  status: number;
+  message: string;
+  data: {
+    room_id: number;
+    room: NewChatRoom;
+  };
 }
 
 interface Ts_PostActionProps {
@@ -31,8 +45,47 @@ const Ts_PostAction = ({
   onDelete,
 }: Ts_PostActionProps) => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const rooms = useAppSelector((state) => state.chat.rooms);
   const currentUserId = useAppSelector((state) => state.user.user?.id);
+  const reduxIsFollowing = useAppSelector(
+    (state) => state.user.followStatus[postUserId] ?? isFollowing,
+  );
+
   const isMyPost = currentUserId === postUserId;
+
+  const createChatRoomApi = (userId: number) => {
+    return axiosCall<CreateChatRoomApiResponse>({
+      ENDPOINT: "chats/create-room",
+      METHOD: "POST",
+      PAYLOAD: {
+        receiver_id: userId,
+        type: 1,
+      },
+    });
+  };
+
+  const handleMessageClick = async () => {
+    try {
+      // 1️⃣ Check if room already exists
+      const existingRoom = findRoomWithUser(rooms, postUserId);
+
+      if (existingRoom) {
+        dispatch(setActiveRoom(existingRoom.id));
+        router.push("/profile/chat");
+        return;
+      }
+
+      // 2️⃣ Create new room
+      const response = await createChatRoomApi(postUserId);
+      const newRoomId = response.data.data.room_id;
+
+      dispatch(setActiveRoom(newRoomId));
+      router.push("/profile/chat");
+    } catch (err) {
+      toast.error("Failed to open chat");
+    }
+  };
 
   const followUserApi = (userId: number) => {
     return axiosCall<FollowUnfollowApiResponse>({
@@ -47,7 +100,7 @@ const Ts_PostAction = ({
   const unfollowUserApi = (userId: number) => {
     return axiosCall<FollowUnfollowApiResponse>({
       ENDPOINT: "followers/unfollow",
-      METHOD: "POST", // change to DELETE if backend expects
+      METHOD: "POST",
       PAYLOAD: {
         user_id: userId,
       },
@@ -56,10 +109,13 @@ const Ts_PostAction = ({
 
   const handleFollowToggle = async () => {
     // 1️⃣ Optimistic update
-    dispatch(toggleFollow(postUserId));
+    // dispatch(toggleFollow(postUserId));
+    dispatch(
+      setFollowStatus({ userId: postUserId, isFollowing: !reduxIsFollowing }),
+    );
 
     try {
-      if (isFollowing) {
+      if (reduxIsFollowing) {
         await unfollowUserApi(postUserId);
         toast.success("Unfollowed");
       } else {
@@ -68,7 +124,10 @@ const Ts_PostAction = ({
       }
     } catch (error: any) {
       // 2️⃣ Rollback on failure
-      dispatch(toggleFollow(postUserId));
+      // dispatch(toggleFollow(postUserId));
+      dispatch(
+        setFollowStatus({ userId: postUserId, isFollowing: !reduxIsFollowing }),
+      );
       toast.error(
         error?.response?.data?.message || "Failed to update follow status",
       );
@@ -195,7 +254,10 @@ const Ts_PostAction = ({
           <>
             {/* 👥 OTHER USER POST ACTIONS */}
             <li>
-              <button className="droplist d-flex align-items-center gap-2">
+              <button
+                className="droplist d-flex align-items-center gap-2"
+                onClick={handleMessageClick}
+              >
                 <i className="material-symbols-outlined mat-icon">chat</i>
                 <span>Message</span>
               </button>
@@ -207,9 +269,9 @@ const Ts_PostAction = ({
                 onClick={handleFollowToggle}
               >
                 <i className="material-symbols-outlined mat-icon">
-                  {isFollowing ? "person_remove" : "person_add"}
+                  {reduxIsFollowing ? "person_remove" : "person_add"}
                 </i>
-                <span>{isFollowing ? "Unfollow" : "Follow"}</span>
+                <span>{reduxIsFollowing ? "Unfollow" : "Follow"}</span>
               </button>
             </li>
 

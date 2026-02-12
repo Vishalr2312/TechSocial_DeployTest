@@ -35,7 +35,7 @@ export const homeLeftMenu = [
   //   ["event", "Events", "/event"],
   //   ["store", "Marketplace", "/marketplace"],
   ["bookmark", "Saved", "/saved-post"],
-  ["diamond", "Subscription", "/subscription"],
+  ["diamond", "Subscription", "/subscribe"],
   //   ["bookmark_add", "Favorites", "/favorites"],
   ["settings", "Settings", "/setting"],
 ];

@@ -3,13 +3,16 @@
 import contentData from "@/data/contentData";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import SingleContact from "./SingleContact";
 import avatar_6 from "/public/images/avatar-6.png";
 import { UserList } from "@/Type/SearchUsers/SearchUsers";
 import axiosCall from "@/Utils/APIcall";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/Redux/hooks";
+import { toggleFollow } from "@/Redux/Reducers/PostFeeds/PostSlice";
+import { setFollowStatus } from "@/Redux/Reducers/UserSlice";
 // import DarkLoader from "../TechSocial/Loader/DarkLoader";
 
 interface ApiResponse {
@@ -33,8 +36,12 @@ interface ContactProps {
 }
 
 const Contact = ({ children }: ContactProps) => {
+  const dispatch = useAppDispatch();
   const pathname = usePathname();
+  const router = useRouter();
   const [users, setUsers] = useState<UserList[]>([]);
+  const followStatus = useAppSelector((state) => state.user.followStatus);
+
   const [loading, setLoading] = useState<boolean>(false);
   // const [pageLoading, setPageLoading] = useState<boolean>(false);
 
@@ -141,31 +148,50 @@ const Contact = ({ children }: ContactProps) => {
     });
   };
 
-  const handleFollowToggle = async (userId: number, isFollowing: number) => {
+  const handleFollowToggle = async (
+    userId: number,
+    initialIsFollowing: number,
+  ) => {
     // 1️⃣ Optimistic UI update
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === userId
-          ? { ...user, isFollowing: isFollowing ? 0 : 1 }
-          : user,
-      ),
+    // setUsers((prev) =>
+    //   prev.map((user) =>
+    //     user.id === userId
+    //       ? { ...user, isFollowing: isFollowing ? 0 : 1 }
+    //       : user,
+    //   ),
+    // );
+    const currentStatus = followStatus[userId] ?? initialIsFollowing === 1;
+    dispatch(
+      setFollowStatus({
+        userId,
+        isFollowing: !currentStatus,
+      }),
     );
 
     try {
       // setPageLoading(true);
-      if (isFollowing) {
+      if (currentStatus) {
         await unfollowUserApi(userId);
         toast.success("Unfollowed");
+        router.refresh();
       } else {
         await followUserApi(userId);
         toast.success("Followed");
+        router.refresh();
       }
+      // router.refresh();
     } catch (error: any) {
       // 2️⃣ Rollback on failure
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === userId ? { ...user, isFollowing } : user,
-        ),
+      // setUsers((prev) =>
+      //   prev.map((user) =>
+      //     user.id === userId ? { ...user, isFollowing } : user,
+      //   ),
+      // );
+      dispatch(
+        setFollowStatus({
+          userId,
+          isFollowing: currentStatus,
+        }),
       );
 
       toast.error(

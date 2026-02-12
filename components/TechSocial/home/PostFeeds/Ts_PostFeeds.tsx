@@ -48,6 +48,7 @@ interface BasePostProps {
   ai_search_views: number;
   isFollowing: boolean;
   isSaved: boolean;
+  isOnline: boolean;
 }
 
 export interface Ts_NormalPostProps extends BasePostProps {
@@ -225,6 +226,7 @@ const Ts_PostFeeds = ({ clss = "", reaction = "" }) => {
       ai_search_views: post.ai_search_views || 0,
       isFollowing: post.user.isFollowing || false,
       isSaved: post.is_saved || false,
+      isOnline: post.user.is_online || false,
     };
 
     /* 🔁 Repost */

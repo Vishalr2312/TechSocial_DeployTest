@@ -38,15 +38,18 @@ interface Ts_PostProps {
   total_comment: number;
   total_share: number;
   ai_search_views: number;
+  isOnline: boolean;
 }
 
 const Ts_CommentedPostFeeds = ({ clss = "", reaction = "" }) => {
   const [allPosts, setAllPosts] = useState<Ts_PostProps[]>([]);
   const [displayedPosts, setDisplayedPosts] = useState<Ts_PostProps[]>([]);
+  const [posts, setPosts] = useState<Ts_PostProps[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [postsPerRender, setPostsPerRender] = useState(20);
   const pageIndex = useRef(0);
+  const loadingRef = useRef(false);
 
   // 🧠 Common mapper
   const mapPost = (post: PostItem): Ts_PostProps => {
@@ -88,105 +91,78 @@ const Ts_CommentedPostFeeds = ({ clss = "", reaction = "" }) => {
       total_comment: post.total_comment || 0,
       total_share: post.total_share || 0,
       ai_search_views: post.ai_search_views || 0,
+      isOnline: post.user.is_online || false,
     };
   };
 
   // 🚀 Fetch posts dynamically
-  const fetchAllPosts = useCallback(async () => {
-    try {
+  const fetchAllPosts = useCallback(async (page = 1) => {
+      if (loadingRef.current) return;
+  
+      loadingRef.current = true;
       setLoading(true);
-
-      // 1️⃣ Fetch first page to get meta info
-      const firstRes = await axiosCall<ApiResponse>({
-        ENDPOINT: "posts/user-commented-posts?page=1",
-        METHOD: "GET",
-      });
-
-      const firstItems = firstRes?.data?.data?.posts ?? [];
-      const meta = firstRes?.data?.data?._meta;
-      const perPage = meta?.perPage ?? 20;
-
-      setPostsPerRender(perPage); // dynamic per-page
-
-      // 2️⃣ Fetch remaining pages in parallel
-      const otherPageRequests = Array.from(
-        { length: (meta?.pageCount ?? 1) - 1 },
-        (_, i) =>
-          axiosCall<ApiResponse>({
-            ENDPOINT: `posts/user-commented-posts?page=${i + 2}`,
-            METHOD: "GET",
-          }).catch(() => null)
-      );
-
-      const responses = await Promise.all(otherPageRequests);
-
-      const allFetchedPosts: PostItem[] = [...firstItems];
-      responses.forEach((res) => {
-        if (res && res.data?.data?.posts?.length) {
-          allFetchedPosts.push(...res.data.data.posts);
+  
+      try {
+        const res = await axiosCall<ApiResponse>({
+          ENDPOINT: `posts/user-commented-posts?expand=user&is_recent=1&page=${page}`,
+          METHOD: "GET",
+        });
+  
+        const items = res?.data?.data?.posts ?? [];
+        const meta = res?.data?.data?._meta;
+  
+        const mappedPosts = items.map(mapPost);
+  
+        setPosts((prev) => [...prev, ...mappedPosts]);
+  
+        pageIndex.current = page;
+  
+        if (!meta || page >= meta.pageCount) {
+          setHasMore(false);
         }
-      });
-
-      // 3️⃣ Map + deduplicate + sort
-      const mappedPosts = allFetchedPosts.map(mapPost);
-
-      const uniquePosts = Array.from(
-        new Map(mappedPosts.map((p) => [p.postId, p])).values()
-      );
-
-      uniquePosts.sort((a, b) => b.created_at - a.created_at);
-
-      // 4️⃣ Store + display
-      setAllPosts(uniquePosts);
-      setDisplayedPosts(uniquePosts.slice(0, perPage));
-      pageIndex.current = 1;
-      setHasMore(uniquePosts.length > perPage);
-    } catch (err) {
-      toast.error(`Failed to fetch posts: ${err}`);
-      console.log(`Failed to fetch posts: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // 📜 Infinite scroll logic
-  const loadMorePosts = useCallback(() => {
-    const nextPosts = allPosts.slice(
-      pageIndex.current * postsPerRender,
-      (pageIndex.current + 1) * postsPerRender
-    );
-
-    setDisplayedPosts((prev) => [...prev, ...nextPosts]);
-    pageIndex.current += 1;
-    if (pageIndex.current * postsPerRender >= allPosts.length) {
-      setHasMore(false);
-    }
-  }, [allPosts, postsPerRender]);
-
-  // Scroll listener
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + window.scrollY >=
-          document.body.offsetHeight - 300 &&
-        hasMore &&
-        !loading
-      ) {
-        loadMorePosts();
+      } catch (err) {
+        toast.error("Failed to fetch posts");
+      } finally {
+        loadingRef.current = false;
+        setLoading(false);
       }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [hasMore, loading, loadMorePosts]);
-
-  // Initial fetch
-  useEffect(() => {
-    fetchAllPosts();
-  }, [fetchAllPosts]);
+    }, []);
+  
+    // 📜 Load more
+    const loadMorePosts = useCallback(() => {
+      if (!loadingRef.current && hasMore) {
+        fetchAllPosts(pageIndex.current + 1);
+      }
+    }, [fetchAllPosts, hasMore]);
+  
+    // Scroll listener
+    useEffect(() => {
+      const handleScroll = () => {
+        if (
+          window.innerHeight + window.scrollY >=
+            document.body.offsetHeight - 300 &&
+          hasMore &&
+          !loadingRef.current
+        ) {
+          loadMorePosts();
+        }
+      };
+  
+      window.addEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
+    }, [hasMore, loadMorePosts]);
+  
+    // Initial fetch
+    useEffect(() => {
+      pageIndex.current = 0;
+      setHasMore(true);
+      setPosts([]);
+      fetchAllPosts(1);
+    }, [fetchAllPosts]);
 
   return (
     <div className="post-item d-flex flex-column gap-5 gap-md-7" id="news-feed">
-      {displayedPosts.map((post) => (
+      {posts.map((post) => (
         <div key={post.postId} className={`post-single-box ${clss}`}>
           <Ts_Post post={post} />
           <Ts_PostReaction post={post} />
