@@ -1,9 +1,10 @@
-import { configureStore } from '@reduxjs/toolkit';
-import UserSlice from './Reducers/UserSlice';
-import ProfileSlice from './Reducers/Profile/ProfileSlice';
-import PublicProfileSlice from './Reducers/Profile/PublicProfileSlice';
-import PostSlice from './Reducers/PostFeeds/PostSlice';
-import ChatSlice from './Reducers/ChatSection/chatSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import UserSlice from "./Reducers/UserSlice";
+import ProfileSlice from "./Reducers/Profile/ProfileSlice";
+import PublicProfileSlice from "./Reducers/Profile/PublicProfileSlice";
+import PostSlice from "./Reducers/PostFeeds/PostSlice";
+import NotificationSlice from "./Reducers/Notification/NotificationSlice";
+import ChatSlice from "./Reducers/ChatSection/chatSlice";
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,8 @@ export const store = configureStore({
     post: PostSlice,
     // Chats
     chat: ChatSlice,
+    // Notifications
+    notification: NotificationSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

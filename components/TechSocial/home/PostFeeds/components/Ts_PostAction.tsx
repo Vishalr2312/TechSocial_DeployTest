@@ -20,7 +20,7 @@ interface SaveUnsaveApiResponse {
   data: [];
 }
 
-export interface CreateChatRoomApiResponse {
+interface CreateChatRoomApiResponse {
   status: number;
   message: string;
   data: {

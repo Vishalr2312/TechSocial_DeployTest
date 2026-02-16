@@ -59,7 +59,25 @@ const Setting = ({ activeHandler }: { activeHandler: (a: string) => void }) => {
           className="avatar cmn-head active-status"
           onClick={() => activeHandler("settings")}
         >
-          <Image className="avatar-img max-un" src={avatar_1} alt="avatar" />
+          {/* <Image className="avatar-img max-un" src={avatar_1} alt="avatar" /> */}
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "15px",
+              overflow: "hidden",
+              border: "1px solid #f05a28",
+            }}
+          >
+            <Image
+              src={user?.picture || avatar_1}
+              alt={`avatar`}
+              width={48}
+              height={48}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              priority
+            />
+          </div>
         </span>
       </div>
       <div className="main-area p-5 profile-content">

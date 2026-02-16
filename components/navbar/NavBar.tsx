@@ -8,8 +8,24 @@ import Notification from "../common/Notification";
 import Setting from "../common/Setting";
 import logo from "/public/images/TechSocial/nav_logo.png";
 import { useClickOutside } from "@/Utils/helperFunctions";
+import Ts_Notification from "../TechSocial/notifications/Ts_Notification";
+import { useAppDispatch } from "@/Redux/hooks";
+import axiosCall from "@/Utils/APIcall";
+import { NotificationCollection } from "@/Type/Notification/Ts_Notifications";
+import { toast } from "react-toastify";
+import { setNotifications } from "@/Redux/Reducers/Notification/NotificationSlice";
+
+export interface NotificationsApiResponse {
+  status: number;
+  message: string;
+  data: {
+    notification: NotificationCollection;
+    errors?: any;
+  };
+}
 
 const NavBar = ({ clss = "container" }: { clss: string }) => {
+  const dispatch = useAppDispatch();
   const [windowHeight, setWindowHeight] = useState(0);
   const [active, setActive] = useState<string>("");
   const [searchInput, setSearchInput] = useState<string>("");
@@ -29,6 +45,34 @@ const NavBar = ({ clss = "container" }: { clss: string }) => {
       setActive(opt);
     }
   };
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await axiosCall<NotificationsApiResponse>({
+          ENDPOINT: "notifications?expand=createdByUser,refrenceDetails",
+          METHOD: "GET",
+        });
+
+        if (response?.data?.data?.errors) {
+          const errors = response.data.data.errors;
+          const firstField = Object.keys(errors)[0] as keyof typeof errors;
+          const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
+          toast.error(firstMessage);
+          return;
+        }
+        const items = response.data.data.notification.items;
+        dispatch(setNotifications(items));
+      } catch (error: any) {
+        toast.error(
+          error?.response?.data?.message || "Failed to fetch chat rooms",
+        );
+      } finally {
+      }
+    };
+
+    fetchNotifications();
+  }, [dispatch]);
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,7 +234,8 @@ const NavBar = ({ clss = "container" }: { clss: string }) => {
                 }`}
               >
                 {/* Notification */}
-                <Notification activeHandler={activeHandler} />
+                {/* <Notification activeHandler={activeHandler} /> */}
+                <Ts_Notification activeHandler={activeHandler} />
               </div>
               <div
                 ref={settingsRef}
