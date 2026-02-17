@@ -145,7 +145,7 @@ const Ts_Post = ({ post }: { post: Ts_PostProps }) => {
           </a>
         ))}
 
-        <p className="description">{postId}</p>
+        {/* <p className="description">{postId}</p> */}
         {hashTags && (
           <p className="hastag d-flex gap-2">
             {hashTags?.map((tag) => (

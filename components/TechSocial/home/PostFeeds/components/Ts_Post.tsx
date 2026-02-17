@@ -421,7 +421,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
           );
         })} */}
 
-        <p className="description">{postId}</p>
+        {/* <p className="description">{postId}</p> */}
         {hashTags && (
           <p className="hastag d-flex gap-2">
             {hashTags?.map((tag) => (
