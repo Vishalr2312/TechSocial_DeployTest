@@ -1,11 +1,11 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import add_post_avatar from '/public/images/add-post-avatar.png';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
-import axiosCall from '@/Utils/APIcall';
-import { toast } from 'react-toastify';
-import { Col, FormGroup, Label, Row } from 'reactstrap';
-import { useEffect, useRef, useState } from 'react';
+import Image from "next/image";
+import Link from "next/link";
+import add_post_avatar from "/public/images/add-post-avatar.png";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import axiosCall from "@/Utils/APIcall";
+import { toast } from "react-toastify";
+import { Col, FormGroup, Label, Row } from "reactstrap";
+import { useEffect, useRef, useState } from "react";
 import {
   OtpVerificationInitialValue,
   OtpVerificationInitialValueType,
@@ -14,13 +14,13 @@ import {
   SignUpInitialValue,
   SignUpInitialValueType,
   SignUpValidation,
-} from '@/Type/User/SignInType';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import DarkLoader from '../../Loader/DarkLoader';
-import Cookies from 'js-cookie';
-import secureLocalStorage from 'react-secure-storage';
-import { useAppDispatch } from '@/Redux/hooks';
-import { signInUser } from '@/Redux/Reducers/UserSlice';
+} from "@/Type/User/SignInType";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import DarkLoader from "../../Loader/DarkLoader";
+import Cookies from "js-cookie";
+import secureLocalStorage from "react-secure-storage";
+import { useAppDispatch } from "@/Redux/hooks";
+import { signInUser } from "@/Redux/Reducers/UserSlice";
 
 interface ApiResponse {
   data: SignInResponseInterface;
@@ -41,41 +41,41 @@ const SignUpModal = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [registrationToken, setRegistrationToken] = useState('');
+  const [registrationToken, setRegistrationToken] = useState("");
 
   const togglePassword = () => setShowPassword((prev) => !prev);
   const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
 
   useEffect(() => {
-    const modalElement = document.getElementById('goTsRegistrationModal');
+    const modalElement = document.getElementById("goTsRegistrationModal");
 
     if (modalElement) {
-      modalElement.addEventListener('show.bs.modal', () => {
+      modalElement.addEventListener("show.bs.modal", () => {
         signUpFormikRef.current?.resetForm();
         otpFormikRef.current?.resetForm();
         setFormStep(1);
-        setRegistrationToken('');
+        setRegistrationToken("");
       });
 
-      modalElement.addEventListener('hidden.bs.modal', () => {
+      modalElement.addEventListener("hidden.bs.modal", () => {
         signUpFormikRef.current?.resetForm();
         otpFormikRef.current?.resetForm();
         setFormStep(1);
-        setRegistrationToken('');
+        setRegistrationToken("");
       });
     }
 
     return () => {
       if (modalElement) {
-        modalElement.removeEventListener('show.bs.modal', () => {});
-        modalElement.removeEventListener('hidden.bs.modal', () => {});
+        modalElement.removeEventListener("show.bs.modal", () => {});
+        modalElement.removeEventListener("hidden.bs.modal", () => {});
       }
     };
   }, []);
 
   const handleSubmit = async (
     values: SignUpInitialValueType,
-    { resetForm }: { resetForm: () => void }
+    { resetForm }: { resetForm: () => void },
   ) => {
     const payload = {
       username: values?.username,
@@ -98,15 +98,15 @@ const SignUpModal = () => {
     try {
       setLoading(true);
       const response = await axiosCall<ApiResponse>({
-        ENDPOINT: 'users/register',
-        METHOD: 'POST',
+        ENDPOINT: "users/register",
+        METHOD: "POST",
         PAYLOAD: payload,
       });
 
       if (response?.data?.data?.errors) {
         const errors = response.data.data.errors;
         const firstField = Object.keys(errors)[0] as keyof typeof errors;
-        const firstMessage = errors[firstField]?.[0] ?? 'Unknown error';
+        const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
         toast.error(firstMessage);
         return;
       }
@@ -117,10 +117,10 @@ const SignUpModal = () => {
     } catch (error: any) {
       if (error.response) {
         const errorMessage =
-          error.response.data.message || 'Something went wrong';
+          error.response.data.message || "Something went wrong";
         toast.error(errorMessage);
       } else if (error.request) {
-        console.error('No response received:', error.request);
+        console.error("No response received:", error.request);
       }
     } finally {
       setLoading(false);
@@ -129,7 +129,7 @@ const SignUpModal = () => {
 
   const handleSubmitOtp = async (
     values: OtpVerificationInitialValueType,
-    { resetForm }: { resetForm: () => void }
+    { resetForm }: { resetForm: () => void },
   ) => {
     const payload = {
       otp: values?.received_otp,
@@ -139,42 +139,42 @@ const SignUpModal = () => {
     try {
       setLoading(true);
       const response = await axiosCall<ApiResponse>({
-        ENDPOINT: 'users/verify-registration-otp',
-        METHOD: 'POST',
+        ENDPOINT: "users/verify-registration-otp",
+        METHOD: "POST",
         PAYLOAD: payload,
       });
 
       if (response?.data?.data?.errors) {
         const errors = response.data.data.errors;
         const firstField = Object.keys(errors)[0] as keyof typeof errors;
-        const firstMessage = errors[firstField]?.[0] ?? 'Unknown error';
+        const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
         toast.error(firstMessage);
         return;
       }
       const token = response?.data?.data?.auth_key!;
-      Cookies.set('loginToken', token, {
+      Cookies.set("loginToken", token, {
         expires: 7,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
       });
-      secureLocalStorage.setItem('loginToken', token);
+      secureLocalStorage.setItem("loginToken", token);
       dispatch(signInUser(response?.data?.data));
-      window.location.href = '/user-interest';
+      window.location.href = "/user-interest";
       toast.success(response.data.message);
       resetForm();
     } catch (error: any) {
       if (error.response) {
         const errorMessage =
-          error.response.data.message || 'Something went wrong';
+          error.response.data.message || "Something went wrong";
         toast.error(errorMessage);
       } else if (error.request) {
-        console.error('No response received:', error.request);
+        console.error("No response received:", error.request);
       }
       setLoading(false);
     } finally {
-      if (window.location.pathname === '/user-interest') {
+      if (window.location.pathname === "/user-interest") {
         setLoading(false);
-        setRegistrationToken('');
+        setRegistrationToken("");
         setFormStep(1);
       }
     }
@@ -206,7 +206,7 @@ const SignUpModal = () => {
                       </button>
                     </div>
                     <div className="top-content pb-5">
-                      <h5>{formStep === 1 ? 'Sign Up' : 'Verify OTP'}</h5>
+                      <h5>{formStep === 1 ? "Sign Up" : "Verify OTP"}</h5>
                     </div>
                     <div className="mid-area">
                       {formStep === 1 ? (
@@ -232,8 +232,8 @@ const SignUpModal = () => {
                                               {...field}
                                               className={`input-area dark ${
                                                 meta.touched && meta.error
-                                                  ? 'error'
-                                                  : ''
+                                                  ? "error"
+                                                  : ""
                                               }`}
                                               type="text"
                                               placeholder="Enter your first name"
@@ -261,8 +261,8 @@ const SignUpModal = () => {
                                               {...field}
                                               className={`input-area dark ${
                                                 meta.touched && meta.error
-                                                  ? 'error'
-                                                  : ''
+                                                  ? "error"
+                                                  : ""
                                               }`}
                                               type="text"
                                               placeholder="Enter your last name"
@@ -290,8 +290,8 @@ const SignUpModal = () => {
                                               {...field}
                                               className={`input-area dark ${
                                                 meta.touched && meta.error
-                                                  ? 'error'
-                                                  : ''
+                                                  ? "error"
+                                                  : ""
                                               }`}
                                               type="text"
                                               placeholder="Choose a username"
@@ -319,8 +319,8 @@ const SignUpModal = () => {
                                               {...field}
                                               className={`input-area dark ${
                                                 meta.touched && meta.error
-                                                  ? 'error'
-                                                  : ''
+                                                  ? "error"
+                                                  : ""
                                               }`}
                                               type="email"
                                               placeholder="Enter your email"
@@ -348,18 +348,18 @@ const SignUpModal = () => {
                                               {...field}
                                               className={`input-area dark ${
                                                 meta.touched && meta.error
-                                                  ? 'error'
-                                                  : ''
+                                                  ? "error"
+                                                  : ""
                                               }`}
                                               type={
                                                 showPassword
-                                                  ? 'text'
-                                                  : 'password'
+                                                  ? "text"
+                                                  : "password"
                                               }
                                               placeholder="Enter your password"
                                             />
                                             <span
-                                              style={{ top: '72%' }}
+                                              style={{ top: "72%" }}
                                               className="position-absolute end-0 translate-middle-y pe-3 cursor-pointer"
                                               onClick={togglePassword}
                                             >
@@ -392,18 +392,18 @@ const SignUpModal = () => {
                                               {...field}
                                               className={`input-area dark ${
                                                 meta.touched && meta.error
-                                                  ? 'error'
-                                                  : ''
+                                                  ? "error"
+                                                  : ""
                                               }`}
                                               type={
                                                 showConfirmPassword
-                                                  ? 'text'
-                                                  : 'password'
+                                                  ? "text"
+                                                  : "password"
                                               }
                                               placeholder="Confirm your password"
                                             />
                                             <span
-                                              style={{ top: '72%' }}
+                                              style={{ top: "72%" }}
                                               className="position-absolute end-0 translate-middle-y pe-3 cursor-pointer"
                                               onClick={toggleConfirmPassword}
                                             >
@@ -461,8 +461,7 @@ const SignUpModal = () => {
                                   <Col md="12">
                                     <FormGroup className="single-input text-start">
                                       <Label className="col-form-label" check>
-                                        Enter the OTP 1234 received on your
-                                        email
+                                        Enter the OTP received on your email
                                       </Label>
                                       <Field name="received_otp">
                                         {({ field, meta }: any) => (
@@ -471,11 +470,13 @@ const SignUpModal = () => {
                                               {...field}
                                               className={`input-area dark ${
                                                 meta.touched && meta.error
-                                                  ? 'error'
-                                                  : ''
+                                                  ? "error"
+                                                  : ""
                                               }`}
                                               type="text"
-                                              placeholder="Enter OTP 1234"
+                                              inputMode="numeric"
+                                              autoComplete="one-time-code"
+                                              placeholder="Enter OTP"
                                             />
                                             {meta.touched && meta.error && (
                                               <div className="error-message-inline">

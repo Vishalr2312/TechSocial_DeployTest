@@ -1,8 +1,19 @@
+import {
+  getChatSocket,
+  waitForSocketConnection,
+} from "@/components/TechSocial/socket/chatSocket";
 import { useAppDispatch, useAppSelector } from "@/Redux/hooks";
-import { setActiveRoom } from "@/Redux/Reducers/ChatSection/chatSlice";
+import {
+  setActiveRoom,
+  setChatRooms,
+} from "@/Redux/Reducers/ChatSection/chatSlice";
 import { toggleFollow, toggleSave } from "@/Redux/Reducers/PostFeeds/PostSlice";
 import { setFollowStatus } from "@/Redux/Reducers/UserSlice";
-import { NewChatRoom } from "@/Type/ChatsSection/chatRoom";
+import {
+  ChatRoom,
+  ChatRoomsData,
+  NewChatRoom,
+} from "@/Type/ChatsSection/chatRoom";
 import axiosCall from "@/Utils/APIcall";
 import { findRoomWithUser } from "@/Utils/chatMessageHelper";
 import { useRouter } from "next/navigation";
@@ -35,6 +46,14 @@ interface Ts_PostActionProps {
   isFollowing?: boolean;
   isSaved?: boolean;
   onDelete: (commentId: number) => void;
+}
+
+interface RoomDetailApiResponse {
+  status: number;
+  message: string;
+  data: {
+    room: ChatRoom;
+  };
 }
 
 const Ts_PostAction = ({
@@ -76,9 +95,49 @@ const Ts_PostAction = ({
         return;
       }
 
+      // 2 ensure socket connected FIRST
+      const socket = await waitForSocketConnection();
+
       // 2️⃣ Create new room
       const response = await createChatRoomApi(postUserId);
       const newRoomId = response.data.data.room_id;
+      // 4 add users via socket
+      // await new Promise<void>((resolve, reject) => {
+      //   const timeout = setTimeout(() => {
+      //     reject("addUser timeout");
+      //   }, 5000);
+
+      //   socket.once("addUser", (res) => {
+      //     clearTimeout(timeout);
+      //     resolve();
+      //   });
+
+      //   socket.emit("addUser", {
+      //     userId: `${currentUserId},${postUserId}`,
+      //     room: newRoomId,
+      //   });
+      // });
+      socket.emit("addUser", {
+        userId: `${currentUserId},${postUserId}`,
+        room: newRoomId,
+      });
+
+      // 5 join room immediately (mobile does this)
+      socket.emit("joinRoom", { room: newRoomId });
+
+      // 🔥 3. fetch full room detail
+      const roomDetailResponse = await axiosCall<RoomDetailApiResponse>({
+        ENDPOINT: `chats/room-detail?room_id=${newRoomId}&expand=createdByUser,chatRoomUser,chatRoomUser.user,lastMessage,chatRoomUser.user.userLiveDetail`,
+        METHOD: "GET",
+      });
+
+      const fullRoom = roomDetailResponse.data.data.room;
+
+      // 🔥 4. store room in redux
+      dispatch(setChatRooms([...rooms, fullRoom]));
+
+      // 🔥 5. activate room
+      dispatch(setActiveRoom(newRoomId));
 
       dispatch(setActiveRoom(newRoomId));
       router.push("/profile/chat");

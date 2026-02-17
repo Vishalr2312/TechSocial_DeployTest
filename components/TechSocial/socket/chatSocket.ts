@@ -32,9 +32,24 @@ export const connectChatSocket = (onConnect?: () => void) => {
   return socket;
 };
 
-export const getChatSocket = () => socket;
+export const waitForSocketConnection = (): Promise<Socket> => {
+  return new Promise((resolve, reject) => {
+    if (!socket) {
+      reject("Socket not initialized");
+      return;
+    }
 
-export const disconnectChatSocket = () => {
-  socket?.disconnect();
-  socket = null;
+    if (socket.connected) {
+      resolve(socket);
+      return;
+    }
+
+    socket.once("connect", () => resolve(socket!));
+
+    setTimeout(() => {
+      reject("Socket connection timeout");
+    }, 5000);
+  });
 };
+
+export const getChatSocket = () => socket;

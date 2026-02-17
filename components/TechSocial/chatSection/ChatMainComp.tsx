@@ -15,11 +15,7 @@ import {
   updateLastMessage,
   updateMessageStatus,
 } from "@/Redux/Reducers/ChatSection/chatSlice";
-import {
-  connectChatSocket,
-  getChatSocket,
-  disconnectChatSocket,
-} from "../socket/chatSocket";
+import { getChatSocket } from "../socket/chatSocket";
 import { decodeChatMessage } from "@/Utils/chatMessageHelper";
 
 interface ChatRoomsApiResponse {
@@ -33,7 +29,7 @@ const ChatMainComp = () => {
   // const token = useAppSelector((s) => s.user.token);
   const activeRoomId = useAppSelector((state) => state.chat.activeRoomId);
   const rooms = useAppSelector((state) => state.chat.rooms);
-  const [socketReady, setSocketReady] = useState(false);
+  // const [socketReady, setSocketReady] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -67,20 +63,20 @@ const ChatMainComp = () => {
     fetchUsers();
   }, [dispatch]);
 
-  useEffect(() => {
-    connectChatSocket(() => {
-      setSocketReady(true);
-    });
+  // useEffect(() => {
+  //   connectChatSocket(() => {
+  //     setSocketReady(true);
+  //   });
 
-    return () => {
-      disconnectChatSocket();
-    };
-  }, []);
-  console.log("🔌 socketReady =", socketReady);
+  //   return () => {
+  //     disconnectChatSocket();
+  //   };
+  // }, []);
+  // console.log("🔌 socketReady =", socketReady);
 
   useEffect(() => {
     const socket = getChatSocket();
-    if (!socketReady || !socket || !activeRoomId) return;
+    if (!socket?.connected || !socket || !activeRoomId) return;
 
     // console.log("📥 Joining room:", activeRoomId);
     socket.emit("joinRoom", { room: activeRoomId });
@@ -89,19 +85,19 @@ const ChatMainComp = () => {
       // console.log("📤 Leaving room:", activeRoomId);
       socket.emit("leaveRoom", { room: activeRoomId });
     };
-  }, [activeRoomId, socketReady]);
+  }, [activeRoomId]);
 
   useEffect(() => {
-    if (!socketReady || rooms.length === 0) return;
-
     const socket = getChatSocket();
+    if (!socket || !socket.connected || rooms.length === 0) return;
+
     if (!socket) return;
 
     rooms.forEach((room) => {
       // console.log("📥 Auto-joining room:", room.id);
       socket.emit("joinRoom", { room: room.id });
     });
-  }, [socketReady, rooms]);
+  }, [rooms]);
 
   useEffect(() => {
     const socket = getChatSocket();

@@ -100,6 +100,10 @@ const Ts_Followers = ({ clss = "" }: { clss?: string }) => {
 
     fetchUsers();
   }, [currentUserId]);
+
+  const filteredFollowers = followers.filter(
+    (item) => item.followerUserDetail.id !== currentUserId,
+  );
   return (
     <>
       {loading && <DarkLoader />}
@@ -108,7 +112,7 @@ const Ts_Followers = ({ clss = "" }: { clss?: string }) => {
           <h4>Followers</h4>
         </div>
         <ul>
-          {followers.map((follower) => {
+          {filteredFollowers.map((follower) => {
             const user = follower.followerUserDetail;
             const firstLetter = user.username?.charAt(0).toUpperCase() || "?";
             const hasImage = !!user.picture;
