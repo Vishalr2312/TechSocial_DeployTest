@@ -112,72 +112,78 @@ const Ts_Followers = ({ clss = "" }: { clss?: string }) => {
           <h4>Followers</h4>
         </div>
         <ul>
-          {filteredFollowers.map((follower) => {
-            const user = follower.followerUserDetail;
-            const firstLetter = user.username?.charAt(0).toUpperCase() || "?";
-            const hasImage = !!user.picture;
+          {filteredFollowers.length === 0 ? (
+            <li>
+              <h6>There are no followers yet.</h6>
+            </li>
+          ) : (
+            filteredFollowers.map((follower) => {
+              const user = follower.followerUserDetail;
+              const firstLetter = user.username?.charAt(0).toUpperCase() || "?";
+              const hasImage = !!user.picture;
 
-            return (
-              <li key={follower.id}>
-                <div className="d-flex align-items-center justify-content-between mb-5">
-                  <div className="d-flex align-items-center gap-3">
-                    {/* Avatar */}
-                    <div
-                      style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: "50%",
-                        overflow: "hidden",
-                        border: "1px solid #f05a28",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        //   backgroundColor: hasImage ? "transparent" : "#f05a28",
-                        color: "#fff",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {hasImage ? (
-                        <Image
-                          src={user.picture!}
-                          alt={user.username}
-                          width={50}
-                          height={50}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
-                      ) : (
-                        <span>{firstLetter}</span>
-                      )}
+              return (
+                <li key={follower.id}>
+                  <div className="d-flex align-items-center justify-content-between mb-5">
+                    <div className="d-flex align-items-center gap-3">
+                      {/* Avatar */}
+                      <div
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: "50%",
+                          overflow: "hidden",
+                          border: "1px solid #f05a28",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          //   backgroundColor: hasImage ? "transparent" : "#f05a28",
+                          color: "#fff",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {hasImage ? (
+                          <Image
+                            src={user.picture!}
+                            alt={user.username}
+                            width={50}
+                            height={50}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <span>{firstLetter}</span>
+                        )}
+                      </div>
+
+                      {/* Username */}
+                      <span>{user.username}</span>
                     </div>
 
-                    {/* Username */}
-                    <span>{user.username}</span>
-                  </div>
+                    <div className="d-flex gap-2">
+                      <button
+                        className="cmn-btn justify-content-center gap-1 w-100 fourth"
+                        onClick={() => handleMessageClick(user.id)}
+                      >
+                        Message
+                      </button>
 
-                  <div className="d-flex gap-2">
-                    <button
-                      className="cmn-btn justify-content-center gap-1 w-100 fourth"
-                      onClick={() => handleMessageClick(user.id)}
-                    >
-                      Message
-                    </button>
-
-                    {/* {user.isFollowing ? (
+                      {/* {user.isFollowing ? (
                       <button className="btn btn-sm btn-outline-danger">
                         Unfollow
                       </button>
                     ) : (
                       <button className="btn btn-sm btn-primary">Follow</button>
                     )} */}
+                    </div>
                   </div>
-                </div>
-              </li>
-            );
-          })}
+                </li>
+              );
+            })
+          )}
         </ul>
       </div>
     </>

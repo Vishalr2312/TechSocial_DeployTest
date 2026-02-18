@@ -346,12 +346,12 @@ const Ts_PostAction = ({
               </button>
             </li>
 
-            <li>
+            {/* <li>
               <button className="droplist d-flex align-items-center gap-2">
                 <i className="material-symbols-outlined mat-icon">block</i>
                 <span>Block User</span>
               </button>
-            </li>
+            </li> */}
 
             <li>
               <button className="droplist d-flex align-items-center gap-2">

@@ -8,18 +8,29 @@ import avatar_1 from "/public/images/avatar-1.png";
 import Ts_SingleChat from "./Ts_SingleChat";
 import { useAppDispatch, useAppSelector } from "@/Redux/hooks";
 import { setActiveRoom } from "@/Redux/Reducers/ChatSection/chatSlice";
-import { getLastMessagePreview, mapRoomToSingleChat } from "@/Utils/chatMessageHelper";
+import {
+  getLastMessagePreview,
+  mapRoomToSingleChat,
+} from "@/Utils/chatMessageHelper";
 
 const Ts_ChatOption = () => {
   const dispatch = useAppDispatch();
   const rooms = useAppSelector((state) => state.chat.rooms);
+  const messagesByRoom = useAppSelector((state) => state.chat.messages);
   const activeRoomId = useAppSelector((state) => state.chat.activeRoomId);
   const currentUserId = useAppSelector((state) => state.user.user?.id);
   const [active, setActive] = useState<boolean>(false);
+  const [search, setSearch] = useState("");
 
   if (!currentUserId) {
     return null; // or loader
   }
+
+  const filteredRooms = rooms.filter((room) => {
+    const chat = mapRoomToSingleChat(room, currentUserId);
+    const name = chat.userName?.toLowerCase() || "";
+    return name.includes(search.toLowerCase());
+  });
 
   return (
     <>
@@ -67,10 +78,16 @@ const Ts_ChatOption = () => {
               </div>
               <form
                 action="#"
+                onSubmit={(e) => e.preventDefault()}
                 className="input-area py-2 d-flex align-items-center"
               >
                 <i className="material-symbols-outlined mat-icon">search</i>
-                <input type="text" placeholder="Search" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
               </form>
             </div>
             <div className="header-menu cus-scrollbar">
@@ -79,21 +96,38 @@ const Ts_ChatOption = () => {
                 {/* {messageData.map((data) => (
                   <Ts_SingleChat key={data.id} data={data} />
                 ))} */}
-                {rooms.map((room) => {
-                  const chat = mapRoomToSingleChat(room, currentUserId);
-                  const lastMessageText = room.lastMessage
-                    ? getLastMessagePreview(room.lastMessage)
-                    : "";
-                  return (
-                    <Ts_SingleChat
-                      key={room.id}
-                      {...chat}
-                      lastMessage={lastMessageText}
-                      isActive={room.id === activeRoomId}
-                      onClick={() => dispatch(setActiveRoom(room.id))}
-                    />
-                  );
-                })}
+                {filteredRooms.length === 0 ? (
+                  <p className="text-center text-muted py-3">No chats found</p>
+                ) : (
+                  filteredRooms.map((room) => {
+                    const chat = mapRoomToSingleChat(room, currentUserId);
+                    const roomMessages = messagesByRoom[room.id]?.items;
+
+                    let lastMessageText = "";
+
+                    if (roomMessages?.length) {
+                      const lastVisibleMessage =
+                        roomMessages[roomMessages.length - 1];
+                      lastMessageText =
+                        getLastMessagePreview(lastVisibleMessage);
+                    } else if (room.lastMessage) {
+                      lastMessageText = getLastMessagePreview(room.lastMessage);
+                    }
+
+                    // const lastMessageText = room.lastMessage
+                    //   ? getLastMessagePreview(room.lastMessage)
+                    //   : "";
+                    return (
+                      <Ts_SingleChat
+                        key={room.id}
+                        {...chat}
+                        lastMessage={lastMessageText}
+                        isActive={room.id === activeRoomId}
+                        onClick={() => dispatch(setActiveRoom(room.id))}
+                      />
+                    );
+                  })
+                )}
               </div>
             </div>
           </aside>

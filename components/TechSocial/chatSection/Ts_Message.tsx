@@ -26,10 +26,13 @@ import {
   encryptChatMessage,
   getLastSeenText,
   getReplyPreviewText,
+  parsePostMessage,
   parseRepliedMessage,
 } from "@/Utils/chatMessageHelper";
 import { getChatSocket } from "../socket/chatSocket";
 import ContactAction from "@/components/ui/ContactAction";
+import PostMessage from "./PostMessage";
+import DarkLoader from "../Loader/DarkLoader";
 
 export interface ChatMessageApiResponse {
   status: number;
@@ -40,6 +43,7 @@ export interface ChatMessageApiResponse {
 const Ts_Message = () => {
   const dispatch = useAppDispatch();
   const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
   const activeRoomId = useAppSelector((state) => state.chat.activeRoomId);
   const room = useAppSelector((state) =>
     state.chat.rooms.find((r) => r.id === activeRoomId),
@@ -65,6 +69,7 @@ const Ts_Message = () => {
 
     const fetchMessages = async () => {
       try {
+        setLoading(true);
         const response = await axiosCall<ChatMessageApiResponse>({
           ENDPOINT: `chats/chat-message?expand=chatMessageUser,user&room_id=${activeRoomId}&last_message_id=${cursor}`,
           METHOD: "GET",
@@ -97,6 +102,8 @@ const Ts_Message = () => {
         toast.error(
           err?.response?.data?.message || "Failed to fetch chat rooms",
         );
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -202,12 +209,15 @@ const Ts_Message = () => {
 
   if (!activeRoomId) {
     return (
-      <div className="p-5 text-center">Select a chat to start messaging</div>
+      <div className="p-5 text-center">
+        <h6 style={{ paddingTop: "30%" }}>Select a chat to start messaging</h6>
+      </div>
     );
   }
   return (
     <div className="main">
       <div className="chat-head py-4 px-5 d-center justify-content-between">
+        {loading && <DarkLoader />}
         <div className="d-flex gap-4 align-items-center">
           {/* <Image src={avatar_2} alt="image" /> */}
           <div className="profile-status">
@@ -372,6 +382,14 @@ const Ts_Message = () => {
           );
           const isMyMessage = msg.created_by === currentUserId;
 
+          const isPostMessage = msg.messageType === 11;
+          const postData =
+            isPostMessage && msg.decryptedMessage?.startsWith("{")
+              ? parsePostMessage(msg.decryptedMessage)
+              : null;
+          console.log("POST DATA:", postData);
+          // console.log("RAW decryptedMessage:", msg.decryptedMessage);
+
           const deleteActions = isMyMessage
             ? [
                 {
@@ -422,7 +440,12 @@ const Ts_Message = () => {
                 )}
 
                 <div className="message">
-                  <p>{msg.decryptedMessage}</p>
+                  {/* <p>{msg.decryptedMessage}</p> */}
+                  {isPostMessage ? (
+                    <PostMessage post={postData} />
+                  ) : (
+                    <p>{msg.decryptedMessage}</p>
+                  )}
                   <div className="message-meta">
                     <p className="message-time">
                       {new Date(msg.created_at * 1000).toLocaleTimeString([], {

@@ -83,7 +83,7 @@ const Ts_SingleChat = ({
             )} */}
           </div>
           {/* <p className={`mdtxt ${clss}`}>{last_message}</p> */}
-          {/* <p className={`mdtxt`}>{lastMessage}</p> */}
+          <p className={`mdtxt`}>{lastMessage}</p>
         </div>
       </div>
       <div className="btn-group cus-dropdown dropend">

@@ -31,6 +31,32 @@ export function decryptAESCryptoJS(encryptedText: string): string {
   }
 }
 
+// export function decodeChatMessage(
+//   encryptedMessage: string,
+//   isEncrypted: number,
+// ): string {
+//   if (!encryptedMessage) return "";
+//   if (isEncrypted !== 1) return encryptedMessage;
+
+//   // First layer
+//   const decrypted = decryptAESCryptoJS(encryptedMessage);
+//   if (!decrypted) return "🔒 Encrypted message";
+
+//   // Try JSON
+//   try {
+//     const parsed = JSON.parse(decrypted);
+
+//     // Text message
+//     if (parsed?.messageType === 1 && parsed?.text) {
+//       return decryptAESCryptoJS(parsed.text) || "🔒 Encrypted message";
+//     }
+
+//     return "📎 Unsupported message";
+//   } catch {
+//     // Fallback (plain AES text)
+//     return decrypted;
+//   }
+// }
 export function decodeChatMessage(
   encryptedMessage: string,
   isEncrypted: number,
@@ -38,22 +64,21 @@ export function decodeChatMessage(
   if (!encryptedMessage) return "";
   if (isEncrypted !== 1) return encryptedMessage;
 
-  // First layer
   const decrypted = decryptAESCryptoJS(encryptedMessage);
   if (!decrypted) return "🔒 Encrypted message";
 
-  // Try JSON
   try {
     const parsed = JSON.parse(decrypted);
 
-    // Text message
+    // TEXT MESSAGE
     if (parsed?.messageType === 1 && parsed?.text) {
-      return decryptAESCryptoJS(parsed.text) || "🔒 Encrypted message";
+      return decryptAESCryptoJS(parsed.text);
     }
 
-    return "📎 Unsupported message";
+    // 🔥 NON TEXT MESSAGE (POST, IMAGE, FILE, etc)
+    // return RAW decrypted payload so UI can handle it
+    return parsed?.text ? decryptAESCryptoJS(parsed.text) : decrypted;
   } catch {
-    // Fallback (plain AES text)
     return decrypted;
   }
 }
@@ -86,34 +111,55 @@ export function encryptChatMessage(
   return encryptAESCryptoJS(JSON.stringify(payload));
 }
 
-export function getLastMessagePreview(lastMessage: any): string {
-  if (!lastMessage) return "";
+// export function getLastMessagePreview(lastMessage: any): string {
+//   if (!lastMessage) return "";
 
-  // Not encrypted → return directly
-  if (lastMessage.is_encrypted !== 1) {
-    return lastMessage.message;
+//   // Not encrypted → return directly
+//   if (lastMessage.is_encrypted !== 1) {
+//     return lastMessage.message;
+//   }
+
+//   // 1️⃣ Decrypt outer layer
+//   const decryptedPayload = decryptAESCryptoJS(lastMessage.message);
+//   if (!decryptedPayload) return "🔒 Encrypted message";
+
+//   // 2️⃣ Parse JSON
+//   let parsed;
+//   try {
+//     parsed = JSON.parse(decryptedPayload);
+//   } catch {
+//     return "🔒 Encrypted message";
+//   }
+
+//   // 3️⃣ Decrypt text content
+//   if (parsed?.text) {
+//     const finalText = decryptAESCryptoJS(parsed.text);
+//     return finalText || "🔒 Encrypted message";
+//   }
+
+//   return "";
+// }
+export const getLastMessagePreview = (msg: any): string => {
+  if (!msg) return "";
+
+  // ✅ POST MESSAGE
+  if (msg.messageType === 11) {
+    return "Post";
   }
 
-  // 1️⃣ Decrypt outer layer
-  const decryptedPayload = decryptAESCryptoJS(lastMessage.message);
-  if (!decryptedPayload) return "🔒 Encrypted message";
-
-  // 2️⃣ Parse JSON
-  let parsed;
-  try {
-    parsed = JSON.parse(decryptedPayload);
-  } catch {
-    return "🔒 Encrypted message";
+  // ✅ REPLY MESSAGE (optional if you want)
+  if (msg.messageType === 9) {
+    return "Reply";
   }
 
-  // 3️⃣ Decrypt text content
-  if (parsed?.text) {
-    const finalText = decryptAESCryptoJS(parsed.text);
-    return finalText || "🔒 Encrypted message";
+  // ✅ NORMAL TEXT
+  if (typeof msg.decryptedMessage === "string") {
+    return msg.decryptedMessage;
   }
 
   return "";
-}
+};
+
 
 export const getLastSeenText = (lastSeen: number, isOnline: number) => {
   if (isOnline === 1) return "online";
@@ -192,4 +238,15 @@ export const findRoomWithUser = (rooms: any[], userId: number) => {
   return rooms.find((room) =>
     room.chatRoomUser.some((u: any) => u.user_id === userId),
   );
+};
+
+export const parsePostMessage = (message?: string) => {
+  if (!message) return null;
+
+  try {
+    return JSON.parse(message);
+  } catch (err) {
+    console.error("Invalid post message JSON", err);
+    return null;
+  }
 };

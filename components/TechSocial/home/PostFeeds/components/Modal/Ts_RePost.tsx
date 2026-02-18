@@ -254,7 +254,7 @@ const Ts_RePost = ({ post, onDelete }: Ts_RePostComponentProps) => {
             <span className="mdtxt status">@{userName}</span>
           </div>
         </div>
-        <div
+        {/* <div
           className="btn-group cus-dropdown"
           onClick={(e) => e.stopPropagation()}
         >
@@ -264,7 +264,7 @@ const Ts_RePost = ({ post, onDelete }: Ts_RePostComponentProps) => {
             isFollowing={post.isFollowing}
             onDelete={onDelete}
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Post Text & Hashtags */}
@@ -372,7 +372,7 @@ const Ts_RePost = ({ post, onDelete }: Ts_RePostComponentProps) => {
           );
         })}
 
-        <p className="description">{postId}</p>
+        {/* <p className="description">{postId}</p> */}
         {hashTags && (
           <p className="hastag d-flex gap-2">
             {hashTags?.map((tag) => (
