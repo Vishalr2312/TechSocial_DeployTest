@@ -141,95 +141,49 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
     return `${Math.floor(seconds / 86400)}d`;
   };
 
-  // const fetchLinkPreview = useCallback(
-  //   async (url: string) => {
-  //     if (linkPreviews[url] || loadingPreviews[url]) return;
+  const fetchLinkPreview = useCallback(
+    async (url: string) => {
+      if (linkPreviews[url] || loadingPreviews[url]) return;
 
-  //     setLoadingPreviews((prev) => ({ ...prev, [url]: true }));
+      setLoadingPreviews((prev) => ({ ...prev, [url]: true }));
 
-  //     try {
-  //       const res = await fetch(
-  //         `https://api.microlink.io?url=${encodeURIComponent(url)}`,
-  //       );
-  //       const json = await res.json();
-  //       const { data } = json;
+      try {
+        const res = await fetch(
+          `/api/link-preview?url=${encodeURIComponent(url)}`,
+        );
 
-  //       if (json.status === "success" && data) {
-  //         const preview: LinkPreview = {
-  //           title: data.title || null,
-  //           description: data.description || null,
-  //           images: data.image ? [data.image.url] : [],
-  //           siteName: data.publisher || null,
-  //           url: data.url || url,
-  //           favicons: data.logo ? [data.logo.url] : [],
-  //         };
+        if (!res.ok) throw new Error("Failed preview");
 
-  //         setLinkPreviews((prev) => ({
-  //           ...prev,
-  //           [url]: preview,
-  //         }));
-  //       } else {
-  //          // Handle failure or empty data silently or set a "failed" state
-  //          console.warn("Link preview failed for:", url, json);
-  //       }
-  //     } catch (err) {
-  //       console.error("Link preview fetch failed", err);
-  //     } finally {
-  //       setLoadingPreviews((prev) => ({ ...prev, [url]: false }));
-  //     }
-  //   },
-  //   [linkPreviews, loadingPreviews],
-  // );
-  // const fetchLinkPreview = useCallback(async (url: string) => {
-  //   setLoadingPreviews((prev) => {
-  //     if (prev[url]) return prev;
-  //     return { ...prev, [url]: true };
-  //   });
+        const data = await res.json();
 
-  //   try {
-  //     const res = await fetch(
-  //       `https://api.microlink.io?url=${encodeURIComponent(url)}`,
-  //     );
-  //     const json = await res.json();
+        setLinkPreviews((prev) => ({
+          ...prev,
+          [url]: {
+            title: data.title ?? null,
+            description: data.description ?? null,
+            images: data.image ? [data.image] : [],
+            siteName: data.publisher ?? null,
+            url: data.url ?? url,
+            favicons: data.logo ? [data.logo] : [],
+          },
+        }));
+      } catch (err) {
+        console.error("Preview error", err);
+      } finally {
+        setLoadingPreviews((prev) => ({ ...prev, [url]: false }));
+      }
+    },
+    [linkPreviews, loadingPreviews],
+  );
 
-  //     if (json.status === "success" && json.data) {
-  //       const data = json.data;
-
-  //       setLinkPreviews((prev) => {
-  //         if (prev[url]) return prev; // 🛑 hard stop duplicate
-  //         return {
-  //           ...prev,
-  //           [url]: {
-  //             title: data.title ?? null,
-  //             description: data.description ?? null,
-  //             images: data.image ? [data.image.url] : [],
-  //             siteName: data.publisher ?? null,
-  //             url: data.url ?? url,
-  //             favicons: data.logo ? [data.logo.url] : [],
-  //           },
-  //         };
-  //       });
-  //     }
-  //   } catch (err) {
-  //     console.error("Link preview fetch failed", err);
-  //   } finally {
-  //     setLoadingPreviews((prev) => ({ ...prev, [url]: false }));
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   urlsInText.forEach((url) => {
-  //     fetchLinkPreview(url);
-  //   });
-  // }, [urlsInText, fetchLinkPreview]);
-  //   useEffect(() => {
-  //   urlsInText.forEach((url) => {
-  //     if (!fetchedUrlsRef.current.has(url)) {
-  //       fetchedUrlsRef.current.add(url);
-  //       fetchLinkPreview(url);
-  //     }
-  //   });
-  // }, [urlsInText, fetchLinkPreview]);
+  useEffect(() => {
+    urlsInText.forEach((url) => {
+      if (!fetchedUrlsRef.current.has(url)) {
+        fetchedUrlsRef.current.add(url);
+        fetchLinkPreview(url);
+      }
+    });
+  }, [urlsInText, fetchLinkPreview]);
 
   return (
     <div className="top-area" onClick={openPost} style={{ cursor: "pointer" }}>
@@ -339,7 +293,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
           </div>
         )}
 
-        {urlsInText.map((url, idx) => (
+        {/* {urlsInText.map((url, idx) => (
           <a
             key={idx}
             href={url}
@@ -364,8 +318,8 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
             </p>
             <p className="description small">{url}</p>
           </a>
-        ))}
-        {/* {urlsInText.map((url, idx) => {
+        ))} */}
+        {urlsInText.map((url, idx) => {
           const preview = linkPreviews[url];
           const isLoading = loadingPreviews[url];
 
@@ -404,7 +358,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
                     {preview.description && (
                       <p className="small">{preview.description}</p>
                     )}
-                    <p className="small">
+                    {/* <p className="small">
                       {preview.siteName ??
                         (() => {
                           try {
@@ -413,13 +367,13 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
                             return url;
                           }
                         })()}
-                    </p>
+                    </p> */}
                   </div>
                 </Link>
               )}
             </div>
           );
-        })} */}
+        })}
 
         {/* <p className="description">{postId}</p> */}
         {hashTags && (
