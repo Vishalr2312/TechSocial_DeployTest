@@ -93,6 +93,7 @@ const SignUpModal = () => {
       website: values?.website,
       profile_category_type: values?.profile_category_type,
       interest_id: values?.interest_id,
+      account_type: values?.account_type === 0 ? 1 : values?.account_type,
     };
 
     try {
@@ -423,24 +424,79 @@ const SignUpModal = () => {
                                       </Field>
                                     </FormGroup>
                                   </Col>
+
+                                  <Col md="12">
+                                    <FormGroup className="single-input text-start">
+                                      <Label className="col-form-label" check>
+                                        Account Type
+                                      </Label>
+
+                                      <Field name="account_type" as="select">
+                                        {({ field, meta }: any) => (
+                                          <>
+                                            <select
+                                              {...field}
+                                              className={`dark input-area ${
+                                                meta.touched && meta.error
+                                                  ? "error"
+                                                  : ""
+                                              }`}
+                                            >
+                                              <option
+                                                value="0"
+                                                selected
+                                                disabled
+                                                className="dark input-area"
+                                              >
+                                                Select account type
+                                              </option>
+                                              <option
+                                                value="1"
+                                                className="dark input-area"
+                                              >
+                                                Individual
+                                              </option>
+                                              <option
+                                                value="2"
+                                                className="dark input-area"
+                                              >
+                                                Company
+                                              </option>
+                                            </select>
+
+                                            {meta.touched && meta.error && (
+                                              <div className="error-message-inline">
+                                                {meta.error}
+                                              </div>
+                                            )}
+                                          </>
+                                        )}
+                                      </Field>
+                                    </FormGroup>
+                                  </Col>
                                 </Row>
 
-                                <Row className="footer-area pt-5">
-                                  <Col className="btn-area d-flex justify-content-between gap-2">
-                                    <button
-                                      type="button"
-                                      className="cmn-btn alt"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#goTsLoginMod"
-                                      data-bs-dismiss="modal"
-                                      aria-label="Close"
-                                      role="modal"
-                                    >
-                                      Sign in
-                                    </button>
+                                <Row className="footer-area">
+                                  <Col className="btn-area d-flex justify-content-center gap-2">
                                     <button className="cmn-btn" type="submit">
-                                      <b>Submit</b>
+                                      <b>Next</b>
                                     </button>
+                                  </Col>
+                                  <Col md="12">
+                                    <div className="redirectOption small">
+                                      Already have an account?{" "}
+                                      <button
+                                        type="button"
+                                        className="text-decoration-none"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#goTsLoginMod"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"
+                                        role="modal"
+                                      >
+                                        Sign in
+                                      </button>
+                                    </div>
                                   </Col>
                                 </Row>
                               </Form>
@@ -491,9 +547,9 @@ const SignUpModal = () => {
                                 </Row>
 
                                 <Row className="footer-area pt-5">
-                                  <Col className="btn-area d-flex justify-content-between gap-2">
+                                  <Col className="btn-area d-flex justify-content-center gap-2">
                                     <button className="cmn-btn" type="submit">
-                                      <b>Submit</b>
+                                      <b>Sign Up</b>
                                     </button>
                                   </Col>
                                 </Row>

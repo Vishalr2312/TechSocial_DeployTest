@@ -1,7 +1,7 @@
-import UserInterestComp from '@/components/TechSocial/login/UserInterestComp';
-import React from 'react';
+import UserInterestComp from "@/components/TechSocial/login/UserInterestComp";
+import React from "react";
 
-const UserInterest = () => {
+const UserInterestPage = () => {
   return (
     <>
       <UserInterestComp />
@@ -9,4 +9,4 @@ const UserInterest = () => {
   );
 };
 
-export default UserInterest;
+export default UserInterestPage;

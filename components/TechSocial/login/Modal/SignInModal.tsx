@@ -1,20 +1,20 @@
-import { Field, Form, Formik } from "formik";
+import { Field, Form, Formik } from 'formik';
 import {
   SignInInitialValue,
   SignInInitialValueType,
   SignInResponseInterface,
   SignInValidation,
-} from "@/Type/User/SignInType";
-import axiosCall from "@/Utils/APIcall";
-import { toast } from "react-toastify";
-import { Col, FormGroup, Label, Row } from "reactstrap";
-import { useEffect, useRef, useState } from "react";
-import { useAppDispatch } from "@/Redux/hooks";
-import secureLocalStorage from "react-secure-storage";
-import { signInUser } from "@/Redux/Reducers/UserSlice";
-import Cookies from "js-cookie";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import LightLoader from "../../Loader/LightLoader";
+} from '@/Type/User/SignInType';
+import axiosCall from '@/Utils/APIcall';
+import { toast } from 'react-toastify';
+import { Col, FormGroup, Label, Row } from 'reactstrap';
+import { useEffect, useRef, useState } from 'react';
+import { useAppDispatch } from '@/Redux/hooks';
+import secureLocalStorage from 'react-secure-storage';
+import { signInUser } from '@/Redux/Reducers/UserSlice';
+import Cookies from 'js-cookie';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import LightLoader from '../../Loader/LightLoader';
 
 interface ApiResponse {
   data: SignInResponseInterface;
@@ -35,22 +35,22 @@ const SignInModal = () => {
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   useEffect(() => {
-    const modalElement = document.getElementById("goTsLoginMod");
+    const modalElement = document.getElementById('goTsLoginMod');
 
     if (modalElement) {
-      modalElement.addEventListener("show.bs.modal", () => {
+      modalElement.addEventListener('show.bs.modal', () => {
         formikRef.current?.resetForm();
       });
 
-      modalElement.addEventListener("hidden.bs.modal", () => {
+      modalElement.addEventListener('hidden.bs.modal', () => {
         formikRef.current?.resetForm();
       });
     }
 
     return () => {
       if (modalElement) {
-        modalElement.removeEventListener("show.bs.modal", () => {});
-        modalElement.removeEventListener("hidden.bs.modal", () => {});
+        modalElement.removeEventListener('show.bs.modal', () => {});
+        modalElement.removeEventListener('hidden.bs.modal', () => {});
       }
     };
   }, []);
@@ -71,38 +71,38 @@ const SignInModal = () => {
       setLoading(true);
 
       const response = await axiosCall<ApiResponse>({
-        ENDPOINT: "users/login",
-        METHOD: "POST",
+        ENDPOINT: 'users/login',
+        METHOD: 'POST',
         PAYLOAD: payload,
       });
       if (response?.data?.data?.errors) {
         const errors = response.data.data.errors;
         const firstField = Object.keys(errors)[0] as keyof typeof errors;
-        const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
+        const firstMessage = errors[firstField]?.[0] ?? 'Unknown error';
         toast.error(firstMessage);
         return;
       }
       const token = response?.data?.data?.auth_key!;
-      Cookies.set("loginToken", token, {
+      Cookies.set('loginToken', token, {
         expires: 7,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
       });
-      secureLocalStorage.setItem("loginToken", token);
+      secureLocalStorage.setItem('loginToken', token);
       dispatch(signInUser(response?.data?.data));
-      window.location.href = "/";
+      window.location.href = '/';
       resetForm();
     } catch (error: any) {
       if (error.response) {
         const errorMessage =
-          error.response.data.message || "Something went wrong";
+          error.response.data.message || 'Something went wrong';
         toast.error(errorMessage);
       } else if (error.request) {
-        console.error("No response received:", error.request);
+        console.error('No response received:', error.request);
       }
       setLoading(false);
     } finally {
-      if (window.location.pathname === "/") {
+      if (window.location.pathname === '/') {
         setLoading(false);
       }
     }
@@ -157,8 +157,8 @@ const SignInModal = () => {
                                             {...field}
                                             className={`input-area dark ${
                                               meta.touched && meta.error
-                                                ? "error"
-                                                : ""
+                                                ? 'error'
+                                                : ''
                                             }`}
                                             type="email"
                                             placeholder="Enter your email"
@@ -186,16 +186,16 @@ const SignInModal = () => {
                                             {...field}
                                             className={`input-area dark ${
                                               meta.touched && meta.error
-                                                ? "error"
-                                                : ""
+                                                ? 'error'
+                                                : ''
                                             }`}
                                             type={
-                                              showPassword ? "text" : "password"
+                                              showPassword ? 'text' : 'password'
                                             }
                                             placeholder="Enter your password"
                                           />
                                           <span
-                                            style={{ top: "72%" }}
+                                            style={{ top: '72%' }}
                                             className="position-absolute end-0 translate-middle-y pe-3 cursor-pointer"
                                             onClick={togglePassword}
                                           >
@@ -216,33 +216,45 @@ const SignInModal = () => {
                                   </FormGroup>
                                 </Col>
                               </Row>
-                              <Row className="footer-area pt-5">
-                                <Col className="btn-area d-flex justify-content-between gap-2">
-                                  <button
-                                    type="button"
-                                    className="cmn-btn alt"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#goTsForgotPasswordMod"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"
-                                    role="modal"
-                                  >
-                                    Forgot password?
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="cmn-btn alt"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#goTsRegistrationModal"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"
-                                    role="modal"
-                                  >
-                                    Sign up
-                                  </button>
+                              <Row className="footer-area">
+                                <Col
+                                  md="12"
+                                  className="btn-area d-flex justify-content-center"
+                                >
                                   <button type="submit" className="cmn-btn">
-                                    <b>Submit</b>
+                                    <b>Sign In</b>
                                   </button>
+                                </Col>
+                                <Col md="12" className="pt-3">
+                                  <div className="redirectOption small">
+                                    <button
+                                      type="button"
+                                      className="text-decoration-none"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#goTsForgotPasswordMod"
+                                      data-bs-dismiss="modal"
+                                      aria-label="Close"
+                                      role="modal"
+                                    >
+                                      Forgot password?
+                                    </button>
+                                  </div>
+                                </Col>
+                                <Col md="12">
+                                  <div className="redirectOption small">
+                                    Create New Account{' '}
+                                    <button
+                                      type="button"
+                                      className="text-decoration-none"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#goTsRegistrationModal"
+                                      data-bs-dismiss="modal"
+                                      aria-label="Close"
+                                      role="modal"
+                                    >
+                                      Sign up
+                                    </button>
+                                  </div>
                                 </Col>
                               </Row>
                             </Form>

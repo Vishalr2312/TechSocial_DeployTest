@@ -173,7 +173,7 @@ const UserInterestComp = () => {
                           }
                         }}
                       >
-                        <div className="user-interest__image-container">
+                        {/* <div className="user-interest__image-container">
                           <Image
                             src={item.imageUrl || "#"}
                             alt={item.name}
@@ -185,7 +185,7 @@ const UserInterestComp = () => {
                               height: `${imageSize.height}px`,
                             }}
                           />
-                        </div>
+                        </div> */}
                         <h6 className="user-interest__name">{item.name}</h6>
                         {isSelected && (
                           <div

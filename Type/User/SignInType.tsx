@@ -79,7 +79,7 @@ export const SignInValidation = Yup.object().shape({
   email: Yup.string()
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      'Invalid email format'
+      'Invalid email format',
     )
     .required('Email is required'),
   password: Yup.string()
@@ -99,7 +99,7 @@ export const ForgotPasswordValidation = Yup.object().shape({
   email: Yup.string()
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      'Invalid email format'
+      'Invalid email format',
     )
     .required('Email is required'),
 });
@@ -122,6 +122,7 @@ export interface SignUpInitialValueType {
   website: string;
   profile_category_type: number;
   interest_id: string;
+  account_type: number;
 }
 
 export const SignUpInitialValue: SignUpInitialValueType = {
@@ -142,6 +143,7 @@ export const SignUpInitialValue: SignUpInitialValueType = {
   website: '',
   profile_category_type: 2,
   interest_id: '',
+  account_type: 0,
 };
 
 export const SignUpValidation = Yup.object().shape({
@@ -163,7 +165,7 @@ export const SignUpValidation = Yup.object().shape({
   email: Yup.string()
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      'Invalid email format'
+      'Invalid email format',
     )
     .required('Email is required'),
 
@@ -174,7 +176,7 @@ export const SignUpValidation = Yup.object().shape({
     .matches(/[0-9]/, 'Password must contain at least one number')
     .matches(
       /[@$!%*?&#]/,
-      'Password must contain at least one special character'
+      'Password must contain at least one special character',
     )
     .required('Password is required'),
 

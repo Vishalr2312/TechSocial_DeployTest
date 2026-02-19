@@ -47,7 +47,7 @@ const ForgotPasswordModal = () => {
 
   const handleSubmit = async (
     values: ForgotPasswordInitialValueType,
-    { resetForm }: { resetForm: () => void }
+    { resetForm }: { resetForm: () => void },
   ) => {
     try {
       // const response = await axiosCall<ApiResponse>({
@@ -135,23 +135,31 @@ const ForgotPasswordModal = () => {
                               </Col>
                             </Row>
                             <Row className="footer-area pt-5">
-                              <Col className="btn-area d-flex justify-content-between gap-2">
-                                <button
-                                  className="cmn-btn alt"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#goTsLoginMod"
-                                  data-bs-dismiss="modal"
-                                  aria-label="Close"
-                                  role="modal"
-                                >
-                                  <b>Sign in</b>
-                                </button>
+                              <Col
+                                md="12"
+                                className="btn-area d-flex justify-content-center gap-2"
+                              >
                                 <button
                                   className="cmn-btn"
                                   {...{ type: 'submit' }}
                                 >
                                   <b>Get Link</b>
                                 </button>
+                              </Col>
+                              <Col md="12">
+                                <div className="redirectOption small">
+                                  <button
+                                    type="button"
+                                    className="text-decoration-none"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#goTsLoginMod"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                    role="modal"
+                                  >
+                                    Sign in
+                                  </button>
+                                </div>
                               </Col>
                             </Row>
                           </Form>
