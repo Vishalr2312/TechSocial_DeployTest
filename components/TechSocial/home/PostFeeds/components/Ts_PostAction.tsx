@@ -1,23 +1,24 @@
 import {
   getChatSocket,
   waitForSocketConnection,
-} from "@/components/TechSocial/socket/chatSocket";
-import { useAppDispatch, useAppSelector } from "@/Redux/hooks";
+} from '@/components/TechSocial/socket/chatSocket';
+import { useAppDispatch, useAppSelector } from '@/Redux/hooks';
 import {
   setActiveRoom,
   setChatRooms,
-} from "@/Redux/Reducers/ChatSection/chatSlice";
-import { toggleFollow, toggleSave } from "@/Redux/Reducers/PostFeeds/PostSlice";
-import { setFollowStatus } from "@/Redux/Reducers/UserSlice";
+} from '@/Redux/Reducers/ChatSection/chatSlice';
+import { toggleFollow, toggleSave } from '@/Redux/Reducers/PostFeeds/PostSlice';
+import { closeSearchBar } from '@/Redux/Reducers/SearchBarSlice';
+import { setFollowStatus } from '@/Redux/Reducers/UserSlice';
 import {
   ChatRoom,
   ChatRoomsData,
   NewChatRoom,
-} from "@/Type/ChatsSection/chatRoom";
-import axiosCall from "@/Utils/APIcall";
-import { findRoomWithUser } from "@/Utils/chatMessageHelper";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+} from '@/Type/ChatsSection/chatRoom';
+import axiosCall from '@/Utils/APIcall';
+import { findRoomWithUser } from '@/Utils/chatMessageHelper';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 interface FollowUnfollowApiResponse {
   status: number;
@@ -46,6 +47,7 @@ interface Ts_PostActionProps {
   isFollowing?: boolean;
   isSaved?: boolean;
   onDelete: (commentId: number) => void;
+  isSearchBar?: boolean;
 }
 
 interface RoomDetailApiResponse {
@@ -62,6 +64,7 @@ const Ts_PostAction = ({
   isFollowing = false,
   isSaved = false,
   onDelete,
+  isSearchBar,
 }: Ts_PostActionProps) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -75,8 +78,8 @@ const Ts_PostAction = ({
 
   const createChatRoomApi = (userId: number) => {
     return axiosCall<CreateChatRoomApiResponse>({
-      ENDPOINT: "chats/create-room",
-      METHOD: "POST",
+      ENDPOINT: 'chats/create-room',
+      METHOD: 'POST',
       PAYLOAD: {
         receiver_id: userId,
         type: 1,
@@ -86,12 +89,15 @@ const Ts_PostAction = ({
 
   const handleMessageClick = async () => {
     try {
+      if (isSearchBar) {
+        dispatch(closeSearchBar());
+      }
       // 1️⃣ Check if room already exists
       const existingRoom = findRoomWithUser(rooms, postUserId);
 
       if (existingRoom) {
         dispatch(setActiveRoom(existingRoom.id));
-        router.push("/profile/chat");
+        router.push('/profile/chat');
         return;
       }
 
@@ -117,18 +123,18 @@ const Ts_PostAction = ({
       //     room: newRoomId,
       //   });
       // });
-      socket.emit("addUser", {
+      socket.emit('addUser', {
         userId: `${currentUserId},${postUserId}`,
         room: newRoomId,
       });
 
       // 5 join room immediately (mobile does this)
-      socket.emit("joinRoom", { room: newRoomId });
+      socket.emit('joinRoom', { room: newRoomId });
 
       // 🔥 3. fetch full room detail
       const roomDetailResponse = await axiosCall<RoomDetailApiResponse>({
         ENDPOINT: `chats/room-detail?room_id=${newRoomId}&expand=createdByUser,chatRoomUser,chatRoomUser.user,lastMessage,chatRoomUser.user.userLiveDetail`,
-        METHOD: "GET",
+        METHOD: 'GET',
       });
 
       const fullRoom = roomDetailResponse.data.data.room;
@@ -140,16 +146,16 @@ const Ts_PostAction = ({
       dispatch(setActiveRoom(newRoomId));
 
       dispatch(setActiveRoom(newRoomId));
-      router.push("/profile/chat");
+      router.push('/profile/chat');
     } catch (err) {
-      toast.error("Failed to open chat");
+      toast.error('Failed to open chat');
     }
   };
 
   const followUserApi = (userId: number) => {
     return axiosCall<FollowUnfollowApiResponse>({
-      ENDPOINT: "followers",
-      METHOD: "POST",
+      ENDPOINT: 'followers',
+      METHOD: 'POST',
       PAYLOAD: {
         user_id: userId,
       },
@@ -158,8 +164,8 @@ const Ts_PostAction = ({
 
   const unfollowUserApi = (userId: number) => {
     return axiosCall<FollowUnfollowApiResponse>({
-      ENDPOINT: "followers/unfollow",
-      METHOD: "POST",
+      ENDPOINT: 'followers/unfollow',
+      METHOD: 'POST',
       PAYLOAD: {
         user_id: userId,
       },
@@ -169,6 +175,9 @@ const Ts_PostAction = ({
   const handleFollowToggle = async () => {
     // 1️⃣ Optimistic update
     // dispatch(toggleFollow(postUserId));
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
     dispatch(
       setFollowStatus({ userId: postUserId, isFollowing: !reduxIsFollowing }),
     );
@@ -176,10 +185,10 @@ const Ts_PostAction = ({
     try {
       if (reduxIsFollowing) {
         await unfollowUserApi(postUserId);
-        toast.success("Unfollowed");
+        toast.success('Unfollowed');
       } else {
         await followUserApi(postUserId);
-        toast.success("Followed");
+        toast.success('Followed');
       }
     } catch (error: any) {
       // 2️⃣ Rollback on failure
@@ -188,15 +197,15 @@ const Ts_PostAction = ({
         setFollowStatus({ userId: postUserId, isFollowing: !reduxIsFollowing }),
       );
       toast.error(
-        error?.response?.data?.message || "Failed to update follow status",
+        error?.response?.data?.message || 'Failed to update follow status',
       );
     }
   };
 
   const savePostApi = (postId: number) => {
     return axiosCall<SaveUnsaveApiResponse>({
-      ENDPOINT: "posts/save",
-      METHOD: "POST",
+      ENDPOINT: 'posts/save',
+      METHOD: 'POST',
       PAYLOAD: {
         post_id: postId,
       },
@@ -205,8 +214,8 @@ const Ts_PostAction = ({
 
   const unsavePostApi = (postId: number) => {
     return axiosCall<SaveUnsaveApiResponse>({
-      ENDPOINT: "posts/unsave",
-      METHOD: "POST",
+      ENDPOINT: 'posts/unsave',
+      METHOD: 'POST',
       PAYLOAD: {
         post_id: postId,
       },
@@ -214,22 +223,25 @@ const Ts_PostAction = ({
   };
 
   const handleSaveToggle = async () => {
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
     // 1️⃣ Optimistic update
     dispatch(toggleSave(postId));
 
     try {
       if (isSaved) {
         await unsavePostApi(postId);
-        toast.success("Post unsaved");
+        toast.success('Post unsaved');
       } else {
         await savePostApi(postId);
-        toast.success("Post saved");
+        toast.success('Post saved');
       }
     } catch (error: any) {
       // 2️⃣ Rollback on failure
       dispatch(toggleSave(postId));
       toast.error(
-        error?.response?.data?.message || "Failed to update save status",
+        error?.response?.data?.message || 'Failed to update save status',
       );
     }
   };
@@ -244,7 +256,9 @@ const Ts_PostAction = ({
       >
         <i className="material-symbols-outlined fs-xxl m-0">more_horiz</i>
       </button>
-      <ul className="dropdown-menu p-4 pt-2">
+      <ul
+        className={`dropdown-menu p-4 pt-2 ${isSearchBar && 'searchBarPostOptions'}`}
+      >
         {/* <li>
           <button className="droplist d-flex align-items-center gap-2">
             <i className="material-symbols-outlined mat-icon">chat</i>
@@ -281,7 +295,11 @@ const Ts_PostAction = ({
             <li>
               <button
                 className="droplist d-flex align-items-center gap-2"
-                // onClick={handleEdit}
+                // onClick={() => {
+                //   if (isSearchBar) {
+                //     dispatch(closeSearchBar());
+                //   }
+                // }}
               >
                 <i className="material-symbols-outlined mat-icon">edit</i>
                 <span>Edit Post</span>
@@ -292,7 +310,10 @@ const Ts_PostAction = ({
               <button
                 className="droplist d-flex align-items-center gap-2 text-danger"
                 onClick={() => {
-                  if (confirm("Are you sure you want to delete this post?")) {
+                  if (isSearchBar) {
+                    dispatch(closeSearchBar());
+                  }
+                  if (confirm('Are you sure you want to delete this post?')) {
                     onDelete(postId);
                   }
                 }}
@@ -328,9 +349,9 @@ const Ts_PostAction = ({
                 onClick={handleFollowToggle}
               >
                 <i className="material-symbols-outlined mat-icon">
-                  {reduxIsFollowing ? "person_remove" : "person_add"}
+                  {reduxIsFollowing ? 'person_remove' : 'person_add'}
                 </i>
-                <span>{reduxIsFollowing ? "Unfollow" : "Follow"}</span>
+                <span>{reduxIsFollowing ? 'Unfollow' : 'Follow'}</span>
               </button>
             </li>
 
@@ -340,9 +361,9 @@ const Ts_PostAction = ({
                 onClick={handleSaveToggle}
               >
                 <i className="material-symbols-outlined mat-icon">
-                  {isSaved ? "bookmark_remove" : "bookmark_add"}
+                  {isSaved ? 'bookmark_remove' : 'bookmark_add'}
                 </i>
-                <span>{isSaved ? "Unsave Post" : "Save Post"}</span>
+                <span>{isSaved ? 'Unsave Post' : 'Save Post'}</span>
               </button>
             </li>
 
@@ -354,7 +375,14 @@ const Ts_PostAction = ({
             </li> */}
 
             <li>
-              <button className="droplist d-flex align-items-center gap-2">
+              <button
+                className="droplist d-flex align-items-center gap-2"
+                onClick={() => {
+                  if (isSearchBar) {
+                    dispatch(closeSearchBar());
+                  }
+                }}
+              >
                 <i className="material-symbols-outlined mat-icon">flag</i>
                 <span>Report Post</span>
               </button>

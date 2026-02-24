@@ -38,7 +38,7 @@ export default function RootLayout({
       setSocketReady(true);
     });
   }, []);
-  console.log("🔌 socketReady =", socketReady);
+  // console.log("🔌 socketReady =", socketReady);
 
   return (
     <html lang="en">

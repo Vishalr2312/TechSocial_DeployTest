@@ -4,7 +4,13 @@ interface ActionItem {
   onClick: () => void;
 }
 
-const ContactAction = ({ actionList }: { actionList: ActionItem[] }) => {
+const ContactAction = ({
+  actionList,
+  isSearchBar,
+}: {
+  actionList: ActionItem[];
+  isSearchBar?: boolean;
+}) => {
   return (
     <div className="btn-group cus-dropdown dropend">
       <button
@@ -15,7 +21,9 @@ const ContactAction = ({ actionList }: { actionList: ActionItem[] }) => {
       >
         <i className="material-symbols-outlined fs-xxl m-0">more_horiz</i>
       </button>
-      <ul className="dropdown-menu p-4 pt-2">
+      <ul
+        className={`dropdown-menu p-4 pt-2 ${isSearchBar && 'searchBarPostOptions'}`}
+      >
         {/* {actionList?.map(([itm, icon], i) => (
           <li key={i}>
             <button className="droplist d-flex align-items-center gap-2">

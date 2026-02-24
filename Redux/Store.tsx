@@ -1,10 +1,11 @@
-import { configureStore } from "@reduxjs/toolkit";
-import UserSlice from "./Reducers/UserSlice";
-import ProfileSlice from "./Reducers/Profile/ProfileSlice";
-import PublicProfileSlice from "./Reducers/Profile/PublicProfileSlice";
-import PostSlice from "./Reducers/PostFeeds/PostSlice";
-import NotificationSlice from "./Reducers/Notification/NotificationSlice";
-import ChatSlice from "./Reducers/ChatSection/chatSlice";
+import { configureStore } from '@reduxjs/toolkit';
+import UserSlice from './Reducers/UserSlice';
+import ProfileSlice from './Reducers/Profile/ProfileSlice';
+import PublicProfileSlice from './Reducers/Profile/PublicProfileSlice';
+import PostSlice from './Reducers/PostFeeds/PostSlice';
+import NotificationSlice from './Reducers/Notification/NotificationSlice';
+import ChatSlice from './Reducers/ChatSection/chatSlice';
+import SearchBarSlice from './Reducers/SearchBarSlice';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     chat: ChatSlice,
     // Notifications
     notification: NotificationSlice,
+    searchBar: SearchBarSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

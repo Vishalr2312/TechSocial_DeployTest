@@ -122,19 +122,16 @@ const Ts_InputBox = ({ onSubmit, loading }: Ts_InputBoxProps) => {
             <i className="material-symbols-outlined mat-icon m-0 fs-lg">
               share
             </i>
-            {/* <h6>Share</h6> */}
           </button>
           <button className="cmn-btn px-2 px-sm-5 px-lg-6">
             <i className="material-symbols-outlined mat-icon m-0 fs-lg">
               content_copy
             </i>
-            {/* <h6>Share</h6> */}
           </button>
           <button className="cmn-btn px-2 px-sm-5 px-lg-6">
             <i className="material-symbols-outlined mat-icon m-0 fs-lg">
               group
             </i>
-            {/* <h6>Share</h6> */}
           </button>
         </div>
       </div>

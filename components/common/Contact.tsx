@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import contentData from "@/data/contentData";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import SingleContact from "./SingleContact";
-import avatar_6 from "/public/images/avatar-6.png";
-import { UserList } from "@/Type/SearchUsers/SearchUsers";
-import axiosCall from "@/Utils/APIcall";
-import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/Redux/hooks";
-import { toggleFollow } from "@/Redux/Reducers/PostFeeds/PostSlice";
-import { setFollowStatus } from "@/Redux/Reducers/UserSlice";
+import contentData from '@/data/contentData';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import SingleContact from './SingleContact';
+import avatar_6 from '/public/images/avatar-6.png';
+import { UserList } from '@/Type/SearchUsers/SearchUsers';
+import axiosCall from '@/Utils/APIcall';
+import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/Redux/hooks';
+import { toggleFollow } from '@/Redux/Reducers/PostFeeds/PostSlice';
+import { setFollowStatus } from '@/Redux/Reducers/UserSlice';
 // import DarkLoader from "../TechSocial/Loader/DarkLoader";
 
 interface ApiResponse {
@@ -92,15 +92,15 @@ const Contact = ({ children }: ContactProps) => {
         setLoading(true);
 
         const response = await axiosCall<ApiResponse>({
-          ENDPOINT: "users/search-user?expand=totalActivePost",
-          METHOD: "POST",
+          ENDPOINT: 'users/search-user?expand=totalActivePost',
+          METHOD: 'POST',
           PAYLOAD: {},
         });
 
         if (response?.data?.data?.errors) {
           const errors = response.data.data.errors;
           const firstField = Object.keys(errors)[0] as keyof typeof errors;
-          const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
+          const firstMessage = errors[firstField]?.[0] ?? 'Unknown error';
           toast.error(firstMessage);
           return;
         }
@@ -108,7 +108,7 @@ const Contact = ({ children }: ContactProps) => {
         const users = response?.data?.data?.user;
 
         if (!users || users.length === 0) {
-          console.log("No users found in response");
+          console.log('No users found in response');
           setUsers([]);
           return;
         }
@@ -119,7 +119,7 @@ const Contact = ({ children }: ContactProps) => {
 
         setUsers(sortedUsers.slice(0, 5));
       } catch (error: any) {
-        toast.error(error?.response?.data?.message || "Failed to fetch users");
+        toast.error(error?.response?.data?.message || 'Failed to fetch users');
       } finally {
         setLoading(false);
       }
@@ -130,8 +130,8 @@ const Contact = ({ children }: ContactProps) => {
 
   const followUserApi = (userId: number) => {
     return axiosCall<FollowUnfollowApiResponse>({
-      ENDPOINT: "followers",
-      METHOD: "POST",
+      ENDPOINT: 'followers',
+      METHOD: 'POST',
       PAYLOAD: {
         user_id: userId,
       },
@@ -140,8 +140,8 @@ const Contact = ({ children }: ContactProps) => {
 
   const unfollowUserApi = (userId: number) => {
     return axiosCall<FollowUnfollowApiResponse>({
-      ENDPOINT: "followers/unfollow",
-      METHOD: "POST", // change if backend uses DELETE
+      ENDPOINT: 'followers/unfollow',
+      METHOD: 'POST', // change if backend uses DELETE
       PAYLOAD: {
         user_id: userId,
       },
@@ -172,11 +172,11 @@ const Contact = ({ children }: ContactProps) => {
       // setPageLoading(true);
       if (currentStatus) {
         await unfollowUserApi(userId);
-        toast.success("Unfollowed");
+        toast.success('Unfollowed');
         router.refresh();
       } else {
         await followUserApi(userId);
-        toast.success("Followed");
+        toast.success('Followed');
         router.refresh();
       }
       // router.refresh();
@@ -195,7 +195,7 @@ const Contact = ({ children }: ContactProps) => {
       );
 
       toast.error(
-        error?.response?.data?.message || "Failed to update follow status",
+        error?.response?.data?.message || 'Failed to update follow status',
       );
     } finally {
       // setPageLoading(false);
@@ -249,7 +249,11 @@ const Contact = ({ children }: ContactProps) => {
               key={user.id}
               className="profile-area d-center position-relative align-items-center justify-content-between"
             >
-              <SingleContact data={user} onFollowToggle={handleFollowToggle} />
+              <SingleContact
+                data={user}
+                onFollowToggle={handleFollowToggle}
+                isSearchBar={false}
+              />
             </div>
           ))
         ) : (

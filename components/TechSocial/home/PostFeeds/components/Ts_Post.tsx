@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import Ts_PostAction from "./Ts_PostAction";
-import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/Redux/hooks";
-import { setSelectedPost } from "@/Redux/Reducers/PostFeeds/PostSlice";
-import dynamic from "next/dynamic";
-import Ts_PdfCarousel from "./Ts_PdfCarousel";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import Ts_PostAction from './Ts_PostAction';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/Redux/hooks';
+import { setSelectedPost } from '@/Redux/Reducers/PostFeeds/PostSlice';
+import dynamic from 'next/dynamic';
+import Ts_PdfCarousel from './Ts_PdfCarousel';
+import { closeSearchBar } from '@/Redux/Reducers/SearchBarSlice';
 
 // const PdfCarousel = dynamic(() => import("./Ts_PdfCarousel"), { ssr: false });
 
@@ -46,9 +47,10 @@ interface Ts_PostProps {
 interface Ts_PostComponentProps {
   post: Ts_PostProps;
   onDelete: (postId: number) => void;
+  isSearchBar?: boolean;
 }
 
-const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
+const Ts_Post = ({ post, onDelete, isSearchBar }: Ts_PostComponentProps) => {
   const {
     postId,
     userId,
@@ -78,7 +80,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
   const [showFullText, setShowFullText] = useState(false);
 
   const { urlsInText, mainText } = useMemo(() => {
-    if (!postText) return { urlsInText: [], mainText: "" };
+    if (!postText) return { urlsInText: [], mainText: '' };
 
     // Improved regex to avoid matching trailing punctuation
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -86,9 +88,9 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
 
     // Clean trailing punctuation from URLs
     const cleanUrls = Array.from(
-      new Set(rawMatches.map((url) => url.replace(/[.,;!?)]+$/, ""))),
+      new Set(rawMatches.map((url) => url.replace(/[.,;!?)]+$/, ''))),
     );
-    const textWithoutUrls = postText.replace(urlRegex, "").trim();
+    const textWithoutUrls = postText.replace(urlRegex, '').trim();
 
     return { urlsInText: cleanUrls, mainText: textWithoutUrls };
   }, [postText]);
@@ -105,28 +107,40 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const firstLetter = name?.charAt(0).toUpperCase() || "?";
+  const firstLetter = name?.charAt(0).toUpperCase() || '?';
 
   const [isImageOpen, setIsImageOpen] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
   const openImageViewer = (e: React.MouseEvent, img: string) => {
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
     e.stopPropagation(); // 🚫 stop post routing
     setActiveImage(img);
     setIsImageOpen(true);
   };
 
   const openPdf = (url: string) => {
-    window.open(url, "_blank", "noopener,noreferrer");
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const openPost = (e: React.MouseEvent) => {
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
     e.stopPropagation();
     dispatch(setSelectedPost(post));
     router.push(`/post/${post.postId}`);
   };
 
   const openUserProfile = (e: React.MouseEvent, userId: number) => {
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
     e.stopPropagation(); // 🚨 prevents post open
     router.push(`/profile/${userId}/post`);
   };
@@ -141,62 +155,108 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
     return `${Math.floor(seconds / 86400)}d`;
   };
 
-  const fetchLinkPreview = useCallback(
-    async (url: string) => {
-      if (linkPreviews[url] || loadingPreviews[url]) return;
+  // const fetchLinkPreview = useCallback(
+  //   async (url: string) => {
+  //     if (linkPreviews[url] || loadingPreviews[url]) return;
 
-      setLoadingPreviews((prev) => ({ ...prev, [url]: true }));
+  //     setLoadingPreviews((prev) => ({ ...prev, [url]: true }));
 
-      try {
-        const res = await fetch(
-          `/api/link-preview?url=${encodeURIComponent(url)}`,
-        );
+  //     try {
+  //       const res = await fetch(
+  //         `https://api.microlink.io?url=${encodeURIComponent(url)}`,
+  //       );
+  //       const json = await res.json();
+  //       const { data } = json;
 
-        if (!res.ok) throw new Error("Failed preview");
+  //       if (json.status === "success" && data) {
+  //         const preview: LinkPreview = {
+  //           title: data.title || null,
+  //           description: data.description || null,
+  //           images: data.image ? [data.image.url] : [],
+  //           siteName: data.publisher || null,
+  //           url: data.url || url,
+  //           favicons: data.logo ? [data.logo.url] : [],
+  //         };
 
-        const data = await res.json();
+  //         setLinkPreviews((prev) => ({
+  //           ...prev,
+  //           [url]: preview,
+  //         }));
+  //       } else {
+  //          // Handle failure or empty data silently or set a "failed" state
+  //          console.warn("Link preview failed for:", url, json);
+  //       }
+  //     } catch (err) {
+  //       console.error("Link preview fetch failed", err);
+  //     } finally {
+  //       setLoadingPreviews((prev) => ({ ...prev, [url]: false }));
+  //     }
+  //   },
+  //   [linkPreviews, loadingPreviews],
+  // );
+  // const fetchLinkPreview = useCallback(async (url: string) => {
+  //   setLoadingPreviews((prev) => {
+  //     if (prev[url]) return prev;
+  //     return { ...prev, [url]: true };
+  //   });
 
-        setLinkPreviews((prev) => ({
-          ...prev,
-          [url]: {
-            title: data.title ?? null,
-            description: data.description ?? null,
-            images: data.image ? [data.image] : [],
-            siteName: data.publisher ?? null,
-            url: data.url ?? url,
-            favicons: data.logo ? [data.logo] : [],
-          },
-        }));
-      } catch (err) {
-        console.error("Preview error", err);
-      } finally {
-        setLoadingPreviews((prev) => ({ ...prev, [url]: false }));
-      }
-    },
-    [linkPreviews, loadingPreviews],
-  );
+  //   try {
+  //     const res = await fetch(
+  //       `https://api.microlink.io?url=${encodeURIComponent(url)}`,
+  //     );
+  //     const json = await res.json();
 
-  useEffect(() => {
-    urlsInText.forEach((url) => {
-      if (!fetchedUrlsRef.current.has(url)) {
-        fetchedUrlsRef.current.add(url);
-        fetchLinkPreview(url);
-      }
-    });
-  }, [urlsInText, fetchLinkPreview]);
+  //     if (json.status === "success" && json.data) {
+  //       const data = json.data;
+
+  //       setLinkPreviews((prev) => {
+  //         if (prev[url]) return prev; // 🛑 hard stop duplicate
+  //         return {
+  //           ...prev,
+  //           [url]: {
+  //             title: data.title ?? null,
+  //             description: data.description ?? null,
+  //             images: data.image ? [data.image.url] : [],
+  //             siteName: data.publisher ?? null,
+  //             url: data.url ?? url,
+  //             favicons: data.logo ? [data.logo.url] : [],
+  //           },
+  //         };
+  //       });
+  //     }
+  //   } catch (err) {
+  //     console.error("Link preview fetch failed", err);
+  //   } finally {
+  //     setLoadingPreviews((prev) => ({ ...prev, [url]: false }));
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   urlsInText.forEach((url) => {
+  //     fetchLinkPreview(url);
+  //   });
+  // }, [urlsInText, fetchLinkPreview]);
+  //   useEffect(() => {
+  //   urlsInText.forEach((url) => {
+  //     if (!fetchedUrlsRef.current.has(url)) {
+  //       fetchedUrlsRef.current.add(url);
+  //       fetchLinkPreview(url);
+  //     }
+  //   });
+  // }, [urlsInText, fetchLinkPreview]);
 
   return (
-    <div className="top-area" onClick={openPost} style={{ cursor: "pointer" }}>
+    <div className="top-area" onClick={openPost} style={{ cursor: 'pointer' }}>
       {/* Profile Header */}
       <div className="profile-area d-center justify-content-between">
         <div
           className="avatar-item d-flex gap-3 align-items-center"
           onClick={(e) => openUserProfile(e, post.userId)}
-          style={{ cursor: "pointer" }}
+          style={{ cursor: 'pointer' }}
         >
           {/* <div className="avatar position-relative"> */}
           <div
-            className={`avatar position-relative ${isOnline ? "online" : "not-online"}`}
+            className={`avatar position-relative ${isOnline ? 'online' : 'not-online'}`}
           >
             {/* <div
               style={{
@@ -220,17 +280,17 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
               style={{
                 width: 50,
                 height: 50,
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: "1px solid #f05a28",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '1px solid #f05a28',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 // backgroundColor: userAvt ? "transparent" : "#f05a28",
-                color: "#fff",
+                color: '#fff',
                 // fontSize: 20,
                 fontWeight: 600,
-                textTransform: "uppercase",
+                textTransform: 'uppercase',
               }}
             >
               {userAvt ? (
@@ -239,7 +299,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
                   alt={name}
                   width={50}
                   height={50}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   priority
                 />
               ) : (
@@ -266,6 +326,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
             isFollowing={post.isFollowing}
             isSaved={post.isSaved}
             onDelete={onDelete}
+            isSearchBar
           />
         </div>
       </div>
@@ -277,7 +338,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
             <p className="description">
               {showFullText
                 ? mainText
-                : mainText.slice(0, 100) + (mainText.length > 100 ? "..." : "")}
+                : mainText.slice(0, 100) + (mainText.length > 100 ? '...' : '')}
               {mainText.length > 100 && (
                 <button
                   className="see-more-btn"
@@ -286,14 +347,14 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
                     setShowFullText((prev) => !prev);
                   }}
                 >
-                  {showFullText ? "less" : "more"}
+                  {showFullText ? 'less' : 'more'}
                 </button>
               )}
             </p>
           </div>
         )}
 
-        {/* {urlsInText.map((url, idx) => (
+        {urlsInText.map((url, idx) => (
           <a
             key={idx}
             href={url}
@@ -301,9 +362,9 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
             rel="noopener noreferrer"
             className="link-preview d-block rounded p-3 mb-2"
             style={{
-              textDecoration: "none",
-              color: "inherit",
-              border: "1px solid #f05a28",
+              textDecoration: 'none',
+              color: 'inherit',
+              border: '1px solid #f05a28',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -318,8 +379,8 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
             </p>
             <p className="description small">{url}</p>
           </a>
-        ))} */}
-        {urlsInText.map((url, idx) => {
+        ))}
+        {/* {urlsInText.map((url, idx) => {
           const preview = linkPreviews[url];
           const isLoading = loadingPreviews[url];
 
@@ -358,7 +419,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
                     {preview.description && (
                       <p className="small">{preview.description}</p>
                     )}
-                    {/* <p className="small">
+                    <p className="small">
                       {preview.siteName ??
                         (() => {
                           try {
@@ -367,13 +428,13 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
                             return url;
                           }
                         })()}
-                    </p> */}
+                    </p>
                   </div>
                 </Link>
               )}
             </div>
           );
-        })}
+        })} */}
 
         {/* <p className="description">{postId}</p> */}
         {hashTags && (
@@ -390,7 +451,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
       {postImgs.length > 0 && (
         <div
           className={`post-media-container ${
-            postImgs.length > 1 ? "clickable" : ""
+            postImgs.length > 1 ? 'clickable' : ''
           }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -398,11 +459,11 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
           }}
         >
           <Image
-            src={postImgs[currentImgIndex] || "/images/default-post.png"}
+            src={postImgs[currentImgIndex] || '/images/default-post.png'}
             alt={`Post Image ${currentImgIndex + 1}`}
             width={600}
             height={400}
-            style={{ objectFit: "contain", width: "100%", height: "auto" }}
+            style={{ objectFit: 'contain', width: '100%', height: 'auto' }}
             onClick={(e) => openImageViewer(e, postImgs[currentImgIndex])}
           />
           {postImgs.length > 1 && (
@@ -457,7 +518,7 @@ const Ts_Post = ({ post, onDelete }: Ts_PostComponentProps) => {
               src={activeImage}
               alt="Fullscreen image"
               fill
-              style={{ objectFit: "contain" }}
+              style={{ objectFit: 'contain' }}
             />
 
             <button

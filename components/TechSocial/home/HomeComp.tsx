@@ -1,7 +1,10 @@
-import HomeLeft from "@/components/TechSocial/home/menu/HomeLeft";
-import PostInputs from "./PostInputs/PostInputs";
-import HomeRight from "./menu/HomeRight";
-import Ts_PostFeeds from "./PostFeeds/Ts_PostFeeds";
+'use client';
+
+import HomeLeft from '@/components/TechSocial/home/menu/HomeLeft';
+import PostInputs from './PostInputs/PostInputs';
+import HomeRight from './menu/HomeRight';
+import Ts_PostFeeds from './PostFeeds/Ts_PostFeeds';
+import Ts_PostFeedsSearchBar from './PostFeeds/Ts_PostFeedsSearchBar';
 
 const HomeComp = () => {
   return (
@@ -17,10 +20,7 @@ const HomeComp = () => {
               {/* Story Slider */}
               {/* <StorySlider /> */}
 
-              {/* Make Post */}
               <PostInputs />
-
-              {/* Feeds */}
               <Ts_PostFeeds clss="p-3 p-sm-5" />
             </div>
             <div className="col-xxl-3 col-xl-4 col-lg-4 col-6 mt-5 mt-xl-0">

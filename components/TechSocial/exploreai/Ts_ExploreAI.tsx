@@ -1,19 +1,21 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify";
-import Link from "next/link";
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
+import Link from 'next/link';
 import {
   AiModel,
   SubscriptionData,
-} from "@/Type/Subscription/UserSubscriptionStatus";
-import { ChatData } from "@/Type/Explore AI/AIChat";
-import Image from "next/image";
-import axiosCall from "@/Utils/TsAPIcall";
-import ReactMarkdown from "react-markdown";
-import DarkLoader from "../Loader/DarkLoader";
-import { useRouter } from "next/navigation";
-import axios from "axios";
+} from '@/Type/Subscription/UserSubscriptionStatus';
+import { ChatData } from '@/Type/Explore AI/AIChat';
+import Image from 'next/image';
+import axiosCall from '@/Utils/TsAPIcall';
+import ReactMarkdown from 'react-markdown';
+import DarkLoader from '../Loader/DarkLoader';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { setSearchByAi } from '@/Redux/Reducers/SearchBarSlice';
+import { useAppDispatch, useAppSelector } from '@/Redux/hooks';
 
 export interface SubscriptionStatusResponse {
   status: number;
@@ -30,26 +32,31 @@ export interface ChatApiResponse {
 }
 
 const Ts_ExploreAI = () => {
+  const dispatch = useAppDispatch();
+  const { searchByAi, searchInput, post_id } = useAppSelector(
+    (state) => state?.searchBar,
+  );
   const router = useRouter();
   // 🔹 State to store textarea value
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
   const [messages, setMessages] = useState<
-    { text: string; sender: "user" | "ai"; file?: string; fileType?: string }[]
+    { text: string; sender: 'user' | 'ai'; file?: string; fileType?: string }[]
   >([]);
   const [firstMessageSent, setFirstMessageSent] = useState(false);
   const [adSubscribed, setAdSubscribed] = useState(false);
   const [workModels, setWorkModels] = useState<AiModel[]>([]);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [selectedAI, setSelectedAI] = useState("Ad.AI");
+  const [selectedAI, setSelectedAI] = useState('Ad.AI');
   //   const [isBookmarked, setIsBookmarked] = useState(false);
   const didFetch = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const hasRunForSearchBar = useRef(false);
 
   const selectedWorkModel = workModels.find((m) => m.name === selectedAI);
-  const isSpecialChat = selectedAI === "Ad.AI" || selectedWorkModel?.id === 14;
+  const isSpecialChat = selectedAI === 'Ad.AI' || selectedWorkModel?.id === 14;
 
   const handleAttachClick = () => {
     fileInputRef.current?.click();
@@ -61,41 +68,49 @@ const Ts_ExploreAI = () => {
     }
   };
 
-  const sendMessage = async () => {
-    if (message.trim() === "" && !attachedFile) return;
+  const sendMessage = async (text?: string, postId?: number) => {
+    const finalMessage = text ?? message;
+
+    if (finalMessage.trim() === '' && !attachedFile && !postId) return;
 
     // Add user message
     setMessages((prev) => [
       ...prev,
       {
-        text: message,
-        sender: "user",
+        text: finalMessage,
+        sender: 'user',
         file: attachedFile ? URL.createObjectURL(attachedFile) : undefined,
         fileType: attachedFile?.type,
       },
     ]);
-    setMessage(""); // clear input
+    setMessage(''); // clear input
     setAttachedFile(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
     setLoading(true);
     if (!firstMessageSent) setFirstMessageSent(true);
 
     try {
-      let aiResponse = "";
+      let aiResponse = '';
 
-      if (selectedAI === "Ad.AI") {
+      if (selectedAI === 'Ad.AI') {
         const formData = new FormData();
-        formData.append("prompt", message);
-        if (attachedFile) {
-          formData.append("files", attachedFile);
+
+        if (postId) {
+          formData.append('post_id', postId.toString());
+          formData.append('is_ai_post_search', 'true');
+        } else {
+          formData.append('prompt', finalMessage);
+          if (attachedFile) {
+            formData.append('files', attachedFile);
+          }
         }
 
         // ✅ Call Ad.AI API
         const res = await axiosCall<ChatApiResponse>({
-          ENDPOINT: "ais/chat",
-          METHOD: "POST",
+          ENDPOINT: 'ais/chat',
+          METHOD: 'POST',
           PAYLOAD: formData,
         });
 
@@ -104,32 +119,32 @@ const Ts_ExploreAI = () => {
           const firstField = Object.keys(
             errors ?? {},
           )[0] as keyof typeof errors;
-          const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
+          const firstMessage = errors[firstField]?.[0] ?? 'Unknown error';
           toast.error(firstMessage);
           return;
         }
 
         aiResponse =
-          res?.data?.data?.chat_response?.response ?? "No response from Ad.AI";
+          res?.data?.data?.chat_response?.response ?? 'No response from Ad.AI';
       } else {
         // ✅ Call Work.AI API
         // Find the selected Work model object
         const workModel = workModels.find((m) => m.name === selectedAI);
 
         if (!workModel) {
-          aiResponse = "Please select a valid Work.AI model.";
+          aiResponse = 'Please select a valid Work.AI model.';
         } else {
           const formData = new FormData();
-          formData.append("prompt", message);
-          formData.append("model_id", workModel.id.toString());
-          formData.append("model", workModel.ai_model);
-          formData.append("provider", workModel.provider.toString());
+          formData.append('prompt', finalMessage);
+          formData.append('model_id', workModel.id.toString());
+          formData.append('model', workModel.ai_model);
+          formData.append('provider', workModel.provider.toString());
           if (attachedFile) {
-            formData.append("files", attachedFile);
+            formData.append('files', attachedFile);
           }
           const res = await axiosCall<ChatApiResponse>({
-            ENDPOINT: "ais/work-ai",
-            METHOD: "POST",
+            ENDPOINT: 'ais/work-ai',
+            METHOD: 'POST',
             PAYLOAD: formData,
           });
 
@@ -138,19 +153,19 @@ const Ts_ExploreAI = () => {
             const firstField = Object.keys(
               errors ?? {},
             )[0] as keyof typeof errors;
-            const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
+            const firstMessage = errors[firstField]?.[0] ?? 'Unknown error';
             toast.error(firstMessage);
             return;
           }
 
           aiResponse =
             res?.data?.data?.chat_response?.response ??
-            "No response from Work.AI";
+            'No response from Work.AI';
         }
       }
 
       // Add AI response to messages
-      setMessages((prev) => [...prev, { text: aiResponse, sender: "ai" }]);
+      setMessages((prev) => [...prev, { text: aiResponse, sender: 'ai' }]);
     } catch (err: any) {
       // catch (err) {
       //   console.error(err);
@@ -168,16 +183,17 @@ const Ts_ExploreAI = () => {
 
         // Handle subscription / limit errors
         if (status === 403 || status === 429) {
-          const errorMessage = data?.message?.error || "Access denied.";
+          setPageLoading(true);
+          const errorMessage = data?.message?.error || 'Access denied.';
 
-          const subscribeUrl = data?.message?.subscribe_url || "/subscribe";
+          const subscribeUrl = data?.message?.subscribe_url || '/subscribe';
 
           // Show backend error message in chat
           setMessages((prev) => [
             ...prev,
             {
               text: errorMessage,
-              sender: "ai",
+              sender: 'ai',
             },
           ]);
 
@@ -194,14 +210,45 @@ const Ts_ExploreAI = () => {
       setMessages((prev) => [
         ...prev,
         {
-          text: "Oops! Something went wrong while fetching AI response.",
-          sender: "ai",
+          text: 'Oops! Something went wrong while fetching AI response.',
+          sender: 'ai',
         },
       ]);
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   };
+
+  // When input is coming from searchBar
+  useEffect(() => {
+    if (!searchByAi) return;
+    if (!searchInput.trim()) return;
+    if (hasRunForSearchBar.current) return;
+
+    hasRunForSearchBar.current = true;
+
+    if (searchByAi && searchInput.trim() !== '') {
+      sendMessage(searchInput);
+      dispatch(setSearchByAi(false));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchByAi, searchInput, dispatch]);
+
+  // When input is coming from post feed
+  useEffect(() => {
+    if (!searchByAi) return;
+    if (!post_id) return;
+    if (hasRunForSearchBar.current) return;
+
+    hasRunForSearchBar.current = true;
+
+    if (searchByAi && post_id !== null) {
+      sendMessage(undefined, Number(post_id));
+      dispatch(setSearchByAi(false));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchByAi, post_id, dispatch]);
 
   // 🔹 Handle Send Button Click
   const handleSend = () => {
@@ -209,14 +256,14 @@ const Ts_ExploreAI = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   // 1. Fetch subscription data (runs once)
@@ -228,8 +275,8 @@ const Ts_ExploreAI = () => {
       try {
         setPageLoading(true);
         const res = await axiosCall<SubscriptionStatusResponse>({
-          ENDPOINT: "users/get-subscription-status",
-          METHOD: "POST",
+          ENDPOINT: 'users/get-subscription-status',
+          METHOD: 'POST',
         });
 
         if (res?.data?.data?.errors) {
@@ -237,7 +284,7 @@ const Ts_ExploreAI = () => {
           const firstField = Object.keys(
             errors ?? {},
           )[0] as keyof typeof errors;
-          const firstMessage = errors[firstField]?.[0] ?? "Unknown error";
+          const firstMessage = errors[firstField]?.[0] ?? 'Unknown error';
           toast.error(firstMessage);
           return;
         }
@@ -248,14 +295,14 @@ const Ts_ExploreAI = () => {
         if (subscriptionData?.ad_ai?.hasSubscription) {
           const isAdSubscribed =
             !subscriptionData.ad_ai.expired &&
-            subscriptionData.ad_ai.subscription?.status === "active";
+            subscriptionData.ad_ai.subscription?.status === 'active';
           setAdSubscribed(isAdSubscribed);
         }
 
         // Work.AI
         if (subscriptionData?.work_ai?.hasSubscription) {
           const activeWorkModels = subscriptionData.work_ai.subscriptions
-            .filter((sub) => sub.status === "active" && !sub.expired)
+            .filter((sub) => sub.status === 'active' && !sub.expired)
             .map((sub) => sub.ai_model);
 
           setWorkModels(activeWorkModels);
@@ -274,7 +321,7 @@ const Ts_ExploreAI = () => {
   useEffect(() => {
     if (!selectedAI) {
       if (adSubscribed) {
-        setSelectedAI("Ad.AI");
+        setSelectedAI('Ad.AI');
       } else if (workModels.length > 0) {
         setSelectedAI(workModels[0].name);
       }
@@ -289,16 +336,16 @@ const Ts_ExploreAI = () => {
       await navigator.clipboard.writeText(textToCopy.text);
 
       // Optional: feedback
-      alert("Copied to clipboard!");
+      alert('Copied to clipboard!');
     } catch (err) {
-      console.error("Failed to copy: ", err);
-      alert("Failed to copy!");
+      console.error('Failed to copy: ', err);
+      alert('Failed to copy!');
     }
   };
 
   const handleNewChat = () => {
     setMessages([]);
-    setMessage("");
+    setMessage('');
     setAttachedFile(null);
     setFirstMessageSent(false);
   };
@@ -308,10 +355,14 @@ const Ts_ExploreAI = () => {
       {pageLoading && <DarkLoader />}
       <div className="top-bar row w-100 justify-content-between">
         <div className="col-auto">
-          <Link href="/" className="chat-btn">
+          <Link
+            href="/"
+            className="chat-btn"
+            onClick={() => dispatch(setSearchByAi(false))}
+          >
             <i
               className="material-symbols-outlined"
-              style={{ color: "#ffffff" }}
+              style={{ color: '#ffffff' }}
             >
               close
             </i>
@@ -347,7 +398,7 @@ const Ts_ExploreAI = () => {
                 <button
                   className="dropdown-item ai-models"
                   onClick={() => {
-                    setSelectedAI("Ad.AI");
+                    setSelectedAI('Ad.AI');
                     setMessages([]);
                   }}
                 >
@@ -406,7 +457,7 @@ const Ts_ExploreAI = () => {
           <button className="chat-btn" title="New Chat" onClick={handleNewChat}>
             <i
               className="material-symbols-outlined"
-              style={{ color: "#ffffff" }}
+              style={{ color: '#ffffff' }}
             >
               edit_square
             </i>
@@ -415,7 +466,7 @@ const Ts_ExploreAI = () => {
       </div>
       <div
         className={`screen-container ${
-          firstMessageSent ? "input-bottom" : "input-middle"
+          firstMessageSent ? 'input-bottom' : 'input-middle'
         }`}
       >
         {/* 🔹 Chat Messages */}
@@ -424,16 +475,16 @@ const Ts_ExploreAI = () => {
             <div
               key={idx}
               className={`chat-message ${
-                msg.sender === "user" ? "user-message" : "ai-message"
+                msg.sender === 'user' ? 'user-message' : 'ai-message'
               }`}
             >
               {msg.file && (
                 <>
-                  {msg.fileType?.startsWith("video/") ? (
+                  {msg.fileType?.startsWith('video/') ? (
                     <video
                       width={90}
                       height={90}
-                      style={{ borderRadius: "8px", marginBottom: "5px" }}
+                      style={{ borderRadius: '8px', marginBottom: '5px' }}
                     >
                       <source src={msg.file} type={msg.fileType} />
                       Your browser does not support the video tag.
@@ -445,9 +496,9 @@ const Ts_ExploreAI = () => {
                       width={90}
                       height={90}
                       style={{
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                        marginBottom: "5px",
+                        objectFit: 'cover',
+                        borderRadius: '8px',
+                        marginBottom: '5px',
                       }}
                     />
                   )}
@@ -457,7 +508,7 @@ const Ts_ExploreAI = () => {
               <ReactMarkdown>{msg.text}</ReactMarkdown>
 
               {/* ✅ Show icons only for AI messages */}
-              {msg.sender === "ai" && (
+              {msg.sender === 'ai' && (
                 <div className="ai-actions ai-btn">
                   <button
                     title="Copy"
@@ -494,28 +545,28 @@ const Ts_ExploreAI = () => {
               <input
                 type="file"
                 ref={fileInputRef}
-                style={{ display: "none" }}
+                style={{ display: 'none' }}
                 onChange={handleFileChange}
                 accept="image/*,video/*"
               />
               {attachedFile && (
                 <div className="attached-file">
-                  {attachedFile.type.startsWith("image/") && (
+                  {attachedFile.type.startsWith('image/') && (
                     <Image
                       src={URL.createObjectURL(attachedFile)}
                       alt={attachedFile.name}
                       width={60}
                       height={60}
-                      style={{ objectFit: "cover", borderRadius: "4px" }}
+                      style={{ objectFit: 'cover', borderRadius: '4px' }}
                       onClick={() => setAttachedFile(null)}
                     />
                   )}
 
-                  {attachedFile.type.startsWith("video/") && (
+                  {attachedFile.type.startsWith('video/') && (
                     <video
                       width={60}
                       height={60}
-                      style={{ borderRadius: "4px" }}
+                      style={{ borderRadius: '4px' }}
                       onClick={() => setAttachedFile(null)}
                     >
                       <source
@@ -542,7 +593,7 @@ const Ts_ExploreAI = () => {
                   <button className="chat-btn" onClick={handleAttachClick}>
                     <i
                       className="material-symbols-outlined"
-                      style={{ color: "#f05a28" }}
+                      style={{ color: '#f05a28' }}
                     >
                       attach_file
                     </i>
@@ -552,7 +603,7 @@ const Ts_ExploreAI = () => {
                   <button className="chat-btn" onClick={handleSend}>
                     <i
                       className="material-symbols-outlined"
-                      style={{ color: "#f05a28" }}
+                      style={{ color: '#f05a28' }}
                     >
                       send
                     </i>
@@ -574,17 +625,17 @@ const Ts_ExploreAI = () => {
               <input
                 type="file"
                 ref={fileInputRef}
-                style={{ display: "none" }}
+                style={{ display: 'none' }}
                 onChange={handleFileChange}
               />
-              {attachedFile && attachedFile.type.startsWith("image/") && (
+              {attachedFile && attachedFile.type.startsWith('image/') && (
                 <div className="attached-file">
                   <Image
                     src={URL.createObjectURL(attachedFile)}
                     alt={attachedFile.name}
                     width={50} // required
                     height={50} // required
-                    style={{ objectFit: "cover", borderRadius: "4px" }}
+                    style={{ objectFit: 'cover', borderRadius: '4px' }}
                     onClick={() => setAttachedFile(null)} // 👈 remove on click
                   />
                 </div>
@@ -602,7 +653,7 @@ const Ts_ExploreAI = () => {
               <button className="chat-btn" onClick={handleSend}>
                 <i
                   className="material-symbols-outlined"
-                  style={{ color: "#f05a28" }}
+                  style={{ color: '#f05a28' }}
                 >
                   send
                 </i>

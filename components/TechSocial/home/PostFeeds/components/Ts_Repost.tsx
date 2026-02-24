@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import Ts_PostAction from "./Ts_PostAction";
-import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/Redux/hooks";
-import { setSelectedPost } from "@/Redux/Reducers/PostFeeds/PostSlice";
-import dynamic from "next/dynamic";
-import Ts_PdfCarousel from "./Ts_PdfCarousel";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import Ts_PostAction from './Ts_PostAction';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/Redux/hooks';
+import { setSelectedPost } from '@/Redux/Reducers/PostFeeds/PostSlice';
+import dynamic from 'next/dynamic';
+import Ts_PdfCarousel from './Ts_PdfCarousel';
+import { closeSearchBar } from '@/Redux/Reducers/SearchBarSlice';
 
 // const PdfCarousel = dynamic(() => import("./Ts_PdfCarousel"), { ssr: false });
 
@@ -64,9 +65,14 @@ interface Ts_RepostProps {
 interface Ts_RepostComponentProps {
   post: Ts_RepostProps;
   onDelete: (postId: number) => void;
+  isSearchBar?: boolean;
 }
 
-const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
+const Ts_Repost = ({
+  post,
+  onDelete,
+  isSearchBar,
+}: Ts_RepostComponentProps) => {
   const {
     postId,
     userId,
@@ -101,8 +107,8 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
   // const urlsInText = originalPost?.text?.match(urlRegex) || [];
   // const mainText = originalPost?.text?.replace(urlRegex, "").trim() || "";
   const { urlsInText, mainText } = useMemo(() => {
-    const text = originalPost?.text ?? "";
-    if (!text) return { urlsInText: [], mainText: "" };
+    const text = originalPost?.text ?? '';
+    if (!text) return { urlsInText: [], mainText: '' };
 
     // Improved regex to avoid matching trailing punctuation
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -110,9 +116,9 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
 
     // Clean trailing punctuation from URLs
     const cleanUrls = Array.from(
-      new Set(rawMatches.map((url) => url.replace(/[.,;!?)]+$/, ""))),
+      new Set(rawMatches.map((url) => url.replace(/[.,;!?)]+$/, ''))),
     );
-    const textWithoutUrls = text.replace(urlRegex, "").trim();
+    const textWithoutUrls = text.replace(urlRegex, '').trim();
 
     return { urlsInText: cleanUrls, mainText: textWithoutUrls };
   }, [originalPost?.text]);
@@ -127,28 +133,40 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const firstLetter = name?.charAt(0).toUpperCase() || "?";
+  const firstLetter = name?.charAt(0).toUpperCase() || '?';
 
   const [isImageOpen, setIsImageOpen] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
   const openImageViewer = (e: React.MouseEvent, img: string) => {
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
     e.stopPropagation(); // 🚫 stop post routing
     setActiveImage(img);
     setIsImageOpen(true);
   };
 
   const openPdf = (url: string) => {
-    window.open(url, "_blank", "noopener,noreferrer");
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const openPost = (e: React.MouseEvent) => {
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
     e.stopPropagation();
     dispatch(setSelectedPost(post));
     router.push(`/post/${post.postId}`);
   };
 
   const openUserProfile = (e: React.MouseEvent, userId: number) => {
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
     e.stopPropagation(); // 🚨 prevents post open
     router.push(`/profile/${userId}/post`);
   };
@@ -245,35 +263,35 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
               />
             </div> */}
             <div
-              className={`avatar position-relative ${isOnline ? "online" : "not-online"}`}
+              className={`avatar position-relative ${isOnline ? 'online' : 'not-online'}`}
             >
               <div
                 style={{
                   width: 50,
                   height: 50,
-                  borderRadius: "50%",
-                  overflow: "hidden",
-                  border: "1px solid #f05a28",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  border: '1px solid #f05a28',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   // backgroundColor: userAvt ? "transparent" : "#f05a28",
-                  color: "#fff",
+                  color: '#fff',
                   // fontSize: 20,
                   fontWeight: 600,
-                  textTransform: "uppercase",
+                  textTransform: 'uppercase',
                 }}
               >
                 {repostedBy.avatar ? (
                   <Image
-                    src={repostedBy.avatar || "/images/default-avatar.png"}
+                    src={repostedBy.avatar || '/images/default-avatar.png'}
                     alt={repostedBy.name}
                     width={50}
                     height={50}
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
                     }}
                     priority
                   />
@@ -301,6 +319,7 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
               postId={post.postId}
               isFollowing={post.isFollowing}
               onDelete={onDelete}
+              isSearchBar
             />
           </div>
         </div>
@@ -327,17 +346,17 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
             style={{
               width: 42,
               height: 42,
-              borderRadius: "50%",
-              overflow: "hidden",
-              border: "1px solid #f05a28",
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '1px solid #f05a28',
             }}
           >
             <Image
-              src={originalPost?.user.avatar || "/images/default-avatar.png"}
+              src={originalPost?.user.avatar || '/images/default-avatar.png'}
               alt={`avatar`}
               width={42}
               height={42}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>
           <span>
@@ -381,14 +400,14 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
             <p className="description">
               {showFullText
                 ? mainText
-                : mainText.slice(0, 150) + (mainText.length > 150 ? "..." : "")}
+                : mainText.slice(0, 150) + (mainText.length > 150 ? '...' : '')}
 
               {mainText.length > 150 && (
                 <button
                   className="see-more-btn"
                   onClick={() => setShowFullText((p) => !p)}
                 >
-                  {showFullText ? "less" : "more"}
+                  {showFullText ? 'less' : 'more'}
                 </button>
               )}
             </p>
@@ -475,22 +494,22 @@ const Ts_Repost = ({ post, onDelete }: Ts_RepostComponentProps) => {
           {(originalPost?.imgs?.length ?? 0) > 0 && (
             <div
               className={`post-media-container ${
-                (originalPost?.imgs?.length ?? 0) > 1 ? "clickable" : ""
+                (originalPost?.imgs?.length ?? 0) > 1 ? 'clickable' : ''
               }`}
               onClick={handleImageClick}
             >
               <Image
                 src={
                   originalPost?.imgs?.[currentImgIndex] ||
-                  "/images/default-post.png"
+                  '/images/default-post.png'
                 }
                 alt="Post image"
                 width={600}
                 height={400}
                 style={{
-                  objectFit: "contain",
-                  width: "100%",
-                  height: "auto",
+                  objectFit: 'contain',
+                  width: '100%',
+                  height: 'auto',
                 }}
               />
               {(originalPost?.imgs?.length ?? 0) > 1 && (

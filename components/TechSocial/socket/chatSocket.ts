@@ -12,7 +12,7 @@ export const connectChatSocket = (onConnect?: () => void) => {
   if (socket) return socket;
 
   socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!, {
-    transports: ["websocket","polling"],
+    transports: ["websocket"],
   });
 
   socket.on("connect", () => {

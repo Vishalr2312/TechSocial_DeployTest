@@ -1,12 +1,12 @@
-import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/Redux/hooks";
-import LightLoader from "@/components/TechSocial/Loader/LightLoader";
+import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/Redux/hooks';
+import LightLoader from '@/components/TechSocial/Loader/LightLoader';
 // import Image from "next/image";
-import axiosCall from "@/Utils/TsAPIcall";
-import Ts_InputBox from "./Ts_InputBox";
-import { clearSelectedPost } from "@/Redux/Reducers/PostFeeds/PostSlice";
-import Ts_RePost from "./Ts_RePost";
+import axiosCall from '@/Utils/TsAPIcall';
+import Ts_InputBox from './Ts_InputBox';
+import { clearSelectedPost } from '@/Redux/Reducers/PostFeeds/PostSlice';
+import Ts_RePost from './Ts_RePost';
 
 interface ApiResponse {
   status: number;
@@ -44,14 +44,17 @@ const Ts_RepostModal = ({ postId }: { postId: number | null }) => {
   //     };
   //   }, []);
   useEffect(() => {
-    const modal = document.getElementById("goTsRepostMod");
+    const modalEl = document.getElementById('goTsRepostMod');
+    if (!modalEl) return;
 
-    const cleanup = () => dispatch(clearSelectedPost());
+    const handleHidden = () => {
+      dispatch(clearSelectedPost());
+    };
 
-    modal?.addEventListener("hidden.bs.modal", cleanup);
+    modalEl.addEventListener('hidden.bs.modal', handleHidden);
 
     return () => {
-      modal?.removeEventListener("hidden.bs.modal", cleanup);
+      modalEl.removeEventListener('hidden.bs.modal', handleHidden);
     };
   }, [dispatch]);
 
@@ -72,7 +75,7 @@ const Ts_RepostModal = ({ postId }: { postId: number | null }) => {
 
   const handleRepost = async (text: string) => {
     if (!selectedPost) {
-      toast.error("No post selected to repost");
+      toast.error('No post selected to repost');
       return;
     }
 
@@ -82,7 +85,7 @@ const Ts_RepostModal = ({ postId }: { postId: number | null }) => {
       const payload = {
         origin_post_id: selectedPost.postId,
         type: 5, // 🔁 REPOST
-        title: text?.trim() || "",
+        title: text?.trim() || '',
         hashtag: null,
         mentionUser: null,
         gallary: [],
@@ -95,21 +98,21 @@ const Ts_RepostModal = ({ postId }: { postId: number | null }) => {
         audio_end_time: null,
         is_add_to_post: 0,
         is_comment_enable: 1,
-        latitude: "",
-        longitude: "",
-        address: "",
+        latitude: '',
+        longitude: '',
+        address: '',
       };
 
       const res = await axiosCall<ApiResponse>({
-        ENDPOINT: "posts",
-        METHOD: "POST",
+        ENDPOINT: 'posts',
+        METHOD: 'POST',
         PAYLOAD: payload,
       });
 
-      toast.success(res?.data?.message || "Reposted successfully");
+      toast.success(res?.data?.message || 'Reposted successfully');
 
       // ✅ Close modal
-      const modalEl = document.getElementById("goTsRepostMod");
+      const modalEl = document.getElementById('goTsRepostMod');
       if (modalEl && (window as any).bootstrap) {
         const modalInstance = (
           window as any
@@ -118,11 +121,11 @@ const Ts_RepostModal = ({ postId }: { postId: number | null }) => {
       }
 
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = '/';
       }, 300);
     } catch (error: any) {
-      console.error("Repost error:", error);
-      toast.error(error?.message || "Failed to repost");
+      console.error('Repost error:', error);
+      toast.error(error?.message || 'Failed to repost');
     } finally {
       setLoading(false);
     }
@@ -152,234 +155,10 @@ const Ts_RepostModal = ({ postId }: { postId: number | null }) => {
                       </button>
                     </div>
                     <div className="top-content pb-5">
-                      <h5>Repost</h5>
+                      {/* <h5>Repost</h5> */}
                     </div>
                     <div className="mid-area">
                       <div className="d-flex flex-column mb-5 gap-3 w-100">
-                        {/* <Formik
-                          innerRef={formikRef}
-                          initialValues={initialValues}
-                          enableReinitialize={true}
-                          // validationSchema={SignInValidation}
-                          onSubmit={handleRepost}
-                        >
-                          {({ values, setFieldValue, resetForm }) => (
-                            <Form className="text-center d-grid gap-4">
-                              <Row className="mt-3">
-                                <Col sm="4">
-                                  <FormGroup className="single-input text-start">
-                                    <Label className="col-form-label" check>
-                                      Name
-                                    </Label>
-                                    <Field name="name">
-                                      {({ field, meta }: any) => (
-                                        <>
-                                          <input
-                                            {...field}
-                                            className={`input-area dark ${
-                                              meta.touched && meta.error
-                                                ? "error"
-                                                : ""
-                                            }`}
-                                            type="text"
-                                            placeholder="Enter your name"
-                                          />
-                                          {meta.touched && meta.error && (
-                                            <div className="error-message-inline">
-                                              {meta.error}
-                                            </div>
-                                          )}
-                                        </>
-                                      )}
-                                    </Field>
-                                  </FormGroup>
-                                </Col>
-
-                                <Col sm="4">
-                                  <FormGroup className="single-input text-start">
-                                    <Label className="col-form-label" check>
-                                      Username
-                                    </Label>
-                                    <Field name="username">
-                                      {({ field, meta }: any) => (
-                                        <>
-                                          <input
-                                            {...field}
-                                            className={`input-area dark ${
-                                              meta.touched && meta.error
-                                                ? "error"
-                                                : ""
-                                            }`}
-                                            type="text"
-                                            placeholder="Enter your username"
-                                          />
-                                          {meta.touched && meta.error && (
-                                            <div className="error-message-inline">
-                                              {meta.error}
-                                            </div>
-                                          )}
-                                        </>
-                                      )}
-                                    </Field>
-                                  </FormGroup>
-                                </Col>
-
-                                <Col sm="4">
-                                  <FormGroup className="single-input text-start">
-                                    <Label className="col-form-label" check>
-                                      Industry / Field
-                                    </Label>
-                                    <Field name="industry">
-                                      {({ field, meta }: any) => (
-                                        <>
-                                          <input
-                                            {...field}
-                                            className={`input-area dark ${
-                                              meta.touched && meta.error
-                                                ? "error"
-                                                : ""
-                                            }`}
-                                            type="text"
-                                            placeholder="Enter your industry"
-                                          />
-                                          {meta.touched && meta.error && (
-                                            <div className="error-message-inline">
-                                              {meta.error}
-                                            </div>
-                                          )}
-                                        </>
-                                      )}
-                                    </Field>
-                                  </FormGroup>
-                                </Col>
-
-                                <Col sm="4">
-                                  <FormGroup className="single-input text-start">
-                                    <Label className="col-form-label" check>
-                                      City
-                                    </Label>
-                                    <Field name="city">
-                                      {({ field, meta }: any) => (
-                                        <>
-                                          <input
-                                            {...field}
-                                            className={`input-area dark ${
-                                              meta.touched && meta.error
-                                                ? "error"
-                                                : ""
-                                            }`}
-                                            type="text"
-                                            placeholder="Enter your city"
-                                          />
-                                          {meta.touched && meta.error && (
-                                            <div className="error-message-inline">
-                                              {meta.error}
-                                            </div>
-                                          )}
-                                        </>
-                                      )}
-                                    </Field>
-                                  </FormGroup>
-                                </Col>
-
-                                <Col sm="4">
-                                  <FormGroup className="single-input text-start">
-                                    <Label className="col-form-label" check>
-                                      Country
-                                    </Label>
-                                    <Field name="country">
-                                      {({ field, meta }: any) => (
-                                        <>
-                                          <input
-                                            {...field}
-                                            className={`input-area dark ${
-                                              meta.touched && meta.error
-                                                ? "error"
-                                                : ""
-                                            }`}
-                                            type="text"
-                                            placeholder="Enter your country"
-                                          />
-                                          {meta.touched && meta.error && (
-                                            <div className="error-message-inline">
-                                              {meta.error}
-                                            </div>
-                                          )}
-                                        </>
-                                      )}
-                                    </Field>
-                                  </FormGroup>
-                                </Col>
-
-                                <Col sm="4">
-                                  <FormGroup className="single-input text-start">
-                                    <Label className="col-form-label" check>
-                                      Website
-                                    </Label>
-                                    <Field name="website">
-                                      {({ field, meta }: any) => (
-                                        <>
-                                          <input
-                                            {...field}
-                                            className={`input-area dark ${
-                                              meta.touched && meta.error
-                                                ? "error"
-                                                : ""
-                                            }`}
-                                            type="text"
-                                            placeholder="Enter your website"
-                                          />
-                                          {meta.touched && meta.error && (
-                                            <div className="error-message-inline">
-                                              {meta.error}
-                                            </div>
-                                          )}
-                                        </>
-                                      )}
-                                    </Field>
-                                  </FormGroup>
-                                </Col>
-
-                                <Col sm="4">
-                                  <FormGroup className="single-input text-start">
-                                    <Label className="col-form-label" check>
-                                      Bio
-                                    </Label>
-                                    <Field name="bio">
-                                      {({ field, meta }: any) => (
-                                        <>
-                                          <input
-                                            {...field}
-                                            className={`input-area dark ${
-                                              meta.touched && meta.error
-                                                ? "error"
-                                                : ""
-                                            }`}
-                                            type="textarea"
-                                            placeholder="Enter your bio"
-                                          />
-                                          {meta.touched && meta.error && (
-                                            <div className="error-message-inline">
-                                              {meta.error}
-                                            </div>
-                                          )}
-                                        </>
-                                      )}
-                                    </Field>
-                                  </FormGroup>
-                                </Col>
-
-                              </Row>
-                              <Row className="footer-area pt-5">
-                                <Col className="btn-area d-flex justify-content-between gap-2">
-                                  <button type="submit" className="cmn-btn">
-                                    <b>Submit</b>
-                                  </button>
-                                </Col>
-                              </Row>
-                            </Form>
-                          )}
-                        </Formik> */}
                         {selectedPost && (
                           <>
                             <div>

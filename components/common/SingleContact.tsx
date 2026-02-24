@@ -1,8 +1,9 @@
-import Image, { StaticImageData } from "next/image";
-import Link from "next/link";
-import ContactAction from "../ui/ContactAction";
-import { UserList } from "@/Type/SearchUsers/SearchUsers";
-import { useAppSelector } from "@/Redux/hooks";
+import Image, { StaticImageData } from 'next/image';
+import Link from 'next/link';
+import ContactAction from '../ui/ContactAction';
+import { UserList } from '@/Type/SearchUsers/SearchUsers';
+import { useAppDispatch, useAppSelector } from '@/Redux/hooks';
+import { closeSearchBar } from '@/Redux/Reducers/SearchBarSlice';
 
 // interface ContactProps {
 //   id: number;
@@ -13,12 +14,19 @@ import { useAppSelector } from "@/Redux/hooks";
 interface SingleContactProps {
   data: UserList;
   onFollowToggle: (userId: number, isFollowing: number) => void;
+  isSearchBar?: boolean;
 }
 
-const SingleContact = ({ data, onFollowToggle }: SingleContactProps) => {
+const SingleContact = ({
+  data,
+  onFollowToggle,
+  isSearchBar,
+}: SingleContactProps) => {
+  const dispatch = useAppDispatch();
+
   // const { avt, id, name } = data;
   const { id, name, picture, isFollower, isFollowing: apiIsFollowing } = data;
-  const firstLetter = name?.charAt(0).toUpperCase() || "?";
+  const firstLetter = name?.charAt(0).toUpperCase() || '?';
   const followStatus = useAppSelector((state) => state.user.followStatus);
   const loggedInUserId = useAppSelector((state) => state.user.user?.id);
   const isOwnProfile = loggedInUserId === id;
@@ -30,15 +38,15 @@ const SingleContact = ({ data, onFollowToggle }: SingleContactProps) => {
   const actionList = isFollowing
     ? [
         {
-          label: "Unfollow",
-          icon: "person_remove",
+          label: 'Unfollow',
+          icon: 'person_remove',
           onClick: () => onFollowToggle(id, apiIsFollowing),
         },
       ]
     : [
         {
-          label: "Follow",
-          icon: "person_add",
+          label: 'Follow',
+          icon: 'person_add',
           onClick: () => onFollowToggle(id, apiIsFollowing),
         },
       ];
@@ -69,17 +77,17 @@ const SingleContact = ({ data, onFollowToggle }: SingleContactProps) => {
             style={{
               width: 48,
               height: 48,
-              borderRadius: "50%",
-              overflow: "hidden",
-              border: "1px solid #f05a28",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '1px solid #f05a28',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               // backgroundColor: picture ? "transparent" : "#f05a28",
-              color: "#fff",
+              color: '#fff',
               // fontSize: 20,
               fontWeight: 600,
-              textTransform: "uppercase",
+              textTransform: 'uppercase',
             }}
           >
             {picture ? (
@@ -88,7 +96,7 @@ const SingleContact = ({ data, onFollowToggle }: SingleContactProps) => {
                 alt={`name`}
                 width={48}
                 height={48}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 priority
               />
             ) : (
@@ -98,8 +106,16 @@ const SingleContact = ({ data, onFollowToggle }: SingleContactProps) => {
         </div>
         <div className="info-area">
           <h6 className="m-0">
-            <Link href="/public-profile/post" className="mdtxt">
-              {name || "Unknown User"}
+            <Link
+              href="/public-profile/post"
+              className="mdtxt"
+              onClick={() => {
+                if (isSearchBar) {
+                  dispatch(closeSearchBar());
+                }
+              }}
+            >
+              {name || 'Unknown User'}
             </Link>
           </h6>
         </div>
@@ -111,7 +127,9 @@ const SingleContact = ({ data, onFollowToggle }: SingleContactProps) => {
           ["Hide Contact", "hide_source"],
         ]}
       /> */}
-      {!isOwnProfile && <ContactAction actionList={actionList} />}
+      {!isOwnProfile && (
+        <ContactAction actionList={actionList} isSearchBar={isSearchBar} />
+      )}
     </>
   );
 };

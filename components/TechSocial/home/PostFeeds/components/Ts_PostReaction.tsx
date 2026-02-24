@@ -1,13 +1,20 @@
-import Image from "next/image";
-import avatar_2 from "/public/images/avatar-2.png";
-import avatar_3 from "/public/images/avatar-3.png";
-import avatar_4 from "/public/images/avatar-4.png";
-import { useAppDispatch } from "@/Redux/hooks";
-import { setSelectedPost } from "@/Redux/Reducers/PostFeeds/PostSlice";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import axiosCall from "@/Utils/APIcall";
-import { toast } from "react-toastify";
+import Image from 'next/image';
+import avatar_2 from '/public/images/avatar-2.png';
+import avatar_3 from '/public/images/avatar-3.png';
+import avatar_4 from '/public/images/avatar-4.png';
+import { useAppDispatch } from '@/Redux/hooks';
+import { setSelectedPost } from '@/Redux/Reducers/PostFeeds/PostSlice';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import axiosCall from '@/Utils/APIcall';
+import { toast } from 'react-toastify';
+import {
+  closeSearchBar,
+  setFeedPostId,
+  setSearchByAi,
+  setSearchInput,
+  setSearchLoading,
+} from '@/Redux/Reducers/SearchBarSlice';
 
 interface LikeUnlikeApiResponse {
   status: number;
@@ -44,14 +51,20 @@ interface Ts_PostReactionProps {
 const Ts_PostReaction = ({
   post,
   isVideoPost = false,
+  isSearchBar,
 }: {
   post: Ts_PostReactionProps;
   isVideoPost?: boolean;
+  isSearchBar?: boolean;
 }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
   const openPost = (e: React.MouseEvent) => {
+    if (isSearchBar) {
+      dispatch(closeSearchBar());
+    }
+
     e.stopPropagation();
     dispatch(setSelectedPost(post));
     router.push(`/post/${post.postId}`);
@@ -72,8 +85,8 @@ const Ts_PostReaction = ({
 
     try {
       const res = await axiosCall<LikeUnlikeApiResponse>({
-        ENDPOINT: willLike ? "posts/like" : "posts/unlike",
-        METHOD: "POST",
+        ENDPOINT: willLike ? 'posts/like' : 'posts/unlike',
+        METHOD: 'POST',
         PAYLOAD: { post_id: post.postId },
       });
 
@@ -86,10 +99,17 @@ const Ts_PostReaction = ({
       setIsLiked(post.is_like);
       setLikeCount(post.total_like);
       // toast.error("Failed to update like");
-      console.error("Failed to update like");
+      console.error('Failed to update like');
     } finally {
       setLikeLoading(false);
     }
+  };
+
+  const handleAiSearch = async (post: Ts_PostReactionProps) => {
+    dispatch(setFeedPostId(post?.postId));
+    dispatch(setSearchByAi(true));
+    dispatch(setSearchLoading(true));
+    router.push('/explore-ai');
   };
 
   const {
@@ -135,16 +155,16 @@ const Ts_PostReaction = ({
             <i
               className="material-symbols-outlined mat-icon"
               style={{
-                fontSize: "20px",
-                color: isLiked ? "#f05a28" : "inherit",
+                fontSize: '20px',
+                color: isLiked ? '#f05a28' : 'inherit',
               }}
             >
-              {" "}
-              thumb_up{" "}
+              {' '}
+              thumb_up{' '}
             </i>
           </button>
           {likeCount > 0 && (
-            <span style={{ fontSize: "15px" }}>{likeCount}</span>
+            <span style={{ fontSize: '15px' }}>{likeCount}</span>
           )}
         </div>
         <div
@@ -155,14 +175,14 @@ const Ts_PostReaction = ({
           <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
             <i
               className="material-symbols-outlined mat-icon"
-              style={{ fontSize: "20px" }}
+              style={{ fontSize: '20px' }}
             >
-              {" "}
-              comment{" "}
+              {' '}
+              comment{' '}
             </i>
           </button>
           {total_comment > 0 && (
-            <span style={{ fontSize: "15px" }}>{total_comment}</span>
+            <span style={{ fontSize: '15px' }}>{total_comment}</span>
           )}
         </div>
         {!isVideoPost && (
@@ -170,21 +190,21 @@ const Ts_PostReaction = ({
             <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "24px",
-                  height: "24px",
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '24px',
+                  height: '24px',
                 }}
-                onClick={() => (window.location.href = "/explore-ai")}
+                onClick={() => handleAiSearch(post)}
               >
                 <svg
                   viewBox="0 0 100 100"
                   xmlns="http://www.w3.org/2000/svg"
                   className="ai-icon"
                   style={{
-                    width: "100%",
-                    height: "100%",
+                    width: '100%',
+                    height: '100%',
                   }}
                 >
                   <circle
@@ -220,7 +240,7 @@ const Ts_PostReaction = ({
               </div>
             </button>
             {ai_search_views > 0 && (
-              <span style={{ fontSize: "15px" }}>{ai_search_views}</span>
+              <span style={{ fontSize: '15px' }}>{ai_search_views}</span>
             )}
           </div>
         )}
@@ -233,32 +253,35 @@ const Ts_PostReaction = ({
             onClick={(e) => {
               e.stopPropagation();
               dispatch(setSelectedPost(post));
+              if (isSearchBar) {
+                dispatch(closeSearchBar());
+              }
             }}
           >
             <i
               className="material-symbols-outlined mat-icon"
-              style={{ fontSize: "20px" }}
+              style={{ fontSize: '20px' }}
             >
-              {" "}
-              upload{" "}
+              {' '}
+              upload{' '}
             </i>
           </button>
           {total_share > 0 && (
-            <span style={{ fontSize: "15px" }}>{total_share}</span>
+            <span style={{ fontSize: '15px' }}>{total_share}</span>
           )}
         </div>
         <div className="d-center flex-wrap">
           <button className="d-center gap-1 gap-sm-2 mdtxt chat-btn">
             <i
               className="material-symbols-outlined mat-icon"
-              style={{ fontSize: "20px" }}
+              style={{ fontSize: '20px' }}
             >
-              {" "}
-              visibility{" "}
+              {' '}
+              visibility{' '}
             </i>
           </button>
           {total_view > 0 && (
-            <span style={{ fontSize: "15px" }}>{total_view}</span>
+            <span style={{ fontSize: '15px' }}>{total_view}</span>
           )}
         </div>
       </div>
