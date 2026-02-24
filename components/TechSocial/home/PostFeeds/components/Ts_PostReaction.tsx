@@ -10,7 +10,7 @@ import axiosCall from '@/Utils/APIcall';
 import { toast } from 'react-toastify';
 import {
   closeSearchBar,
-  setFeedPostId,
+  setSelectedPostForAi,
   setSearchByAi,
   setSearchInput,
   setSearchLoading,
@@ -106,7 +106,7 @@ const Ts_PostReaction = ({
   };
 
   const handleAiSearch = async (post: Ts_PostReactionProps) => {
-    dispatch(setFeedPostId(post?.postId));
+    dispatch(setSelectedPostForAi(post));
     dispatch(setSearchByAi(true));
     dispatch(setSearchLoading(true));
     router.push('/explore-ai');

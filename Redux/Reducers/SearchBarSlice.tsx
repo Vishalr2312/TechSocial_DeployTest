@@ -1,3 +1,4 @@
+import { Ts_PostProps } from '@/components/TechSocial/home/PostFeeds/Ts_PostFeeds';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface SearchBarState {
@@ -8,7 +9,7 @@ interface SearchBarState {
   searchInput: string;
   results: any;
   loading: boolean;
-  post_id: number | null;
+  selectedPostForAi: any;
 }
 
 const initialState: SearchBarState = {
@@ -19,7 +20,7 @@ const initialState: SearchBarState = {
   searchInput: '',
   results: [],
   loading: false,
-  post_id: null,
+  selectedPostForAi: null,
 };
 
 const searchBarSlice = createSlice({
@@ -54,8 +55,8 @@ const searchBarSlice = createSlice({
       state.searchInput = '';
       state.results = [];
     },
-    setFeedPostId: (state, action) => {
-      state.post_id = action.payload;
+    setSelectedPostForAi(state, action: PayloadAction<any>) {
+      state.selectedPostForAi = action.payload;
     },
   },
 });
@@ -69,6 +70,6 @@ export const {
   setSearchLoading,
   closeSearchBar,
   setSearchByAi,
-  setFeedPostId,
+  setSelectedPostForAi,
 } = searchBarSlice.actions;
 export default searchBarSlice.reducer;

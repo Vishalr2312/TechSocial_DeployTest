@@ -33,7 +33,7 @@ export interface ChatApiResponse {
 
 const Ts_ExploreAI = () => {
   const dispatch = useAppDispatch();
-  const { searchByAi, searchInput, post_id } = useAppSelector(
+  const { searchByAi, searchInput, selectedPostForAi } = useAppSelector(
     (state) => state?.searchBar,
   );
   const router = useRouter();
@@ -68,10 +68,10 @@ const Ts_ExploreAI = () => {
     }
   };
 
-  const sendMessage = async (text?: string, postId?: number) => {
+  const sendMessage = async (text?: string, postDetails?: any) => {
     const finalMessage = text ?? message;
 
-    if (finalMessage.trim() === '' && !attachedFile && !postId) return;
+    if (finalMessage.trim() === '' && !attachedFile && !postDetails) return;
 
     // Add user message
     setMessages((prev) => [
@@ -97,9 +97,32 @@ const Ts_ExploreAI = () => {
       if (selectedAI === 'Ad.AI') {
         const formData = new FormData();
 
-        if (postId) {
-          formData.append('post_id', postId.toString());
+        if (postDetails && finalMessage === '') {
+          let textPayload = '';
+          let imageUrl = '';
+
+          if (postDetails?.type === 5) {
+            textPayload = postDetails?.originalPost?.text ?? '';
+            imageUrl = postDetails?.originalPost?.imgs?.[0] ?? '';
+          } else {
+            textPayload = postDetails?.postText ?? '';
+            imageUrl = postDetails?.postImgs?.[0] ?? '';
+          }
+
+          formData.append('prompt', textPayload);
+          formData.append('post_id', postDetails?.postId);
           formData.append('is_ai_post_search', 'true');
+
+          if (imageUrl) {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+
+            const file = new File([blob], 'post-image.jpg', {
+              type: blob.type,
+            });
+
+            formData.append('files', imageUrl);
+          }
         } else {
           formData.append('prompt', finalMessage);
           if (attachedFile) {
@@ -238,17 +261,17 @@ const Ts_ExploreAI = () => {
   // When input is coming from post feed
   useEffect(() => {
     if (!searchByAi) return;
-    if (!post_id) return;
+    if (!selectedPostForAi) return;
     if (hasRunForSearchBar.current) return;
 
     hasRunForSearchBar.current = true;
 
-    if (searchByAi && post_id !== null) {
-      sendMessage(undefined, Number(post_id));
+    if (searchByAi && selectedPostForAi !== null) {
+      sendMessage(undefined, selectedPostForAi);
       dispatch(setSearchByAi(false));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchByAi, post_id, dispatch]);
+  }, [searchByAi, selectedPostForAi, dispatch]);
 
   // 🔹 Handle Send Button Click
   const handleSend = () => {
